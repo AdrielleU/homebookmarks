@@ -54,7 +54,7 @@
   #crumbs a { text-decoration: none; }
   #crumbs a:hover { color: var(--accent); }
   #crumbs .sep { opacity: .5; }
-  #clock { color: var(--muted); font-size: .9rem; font-variant-numeric: tabular-nums; }
+  #clock { color: var(--text); font-size: .9rem; font-variant-numeric: tabular-nums; }
   .topbar-right { display: flex; align-items: center; gap: .75rem; margin-left: auto; }
   .tools { display: flex; gap: .375rem; }
   .tool {
@@ -101,6 +101,12 @@
   }
   .bg-grid button[aria-pressed="true"] { border-color: var(--accent); }
   .custom-color, .seed-row { display: flex; gap: .375rem; align-items: center; }
+  #color-which {
+    width: 100%; padding: .4rem .5rem;
+    border: 1px solid var(--card-hover); border-radius: 8px;
+    background: var(--card); color: var(--text); font: inherit; font-size: .85rem; cursor: pointer;
+  }
+  #color-which:focus { border-color: var(--accent); outline: none; }
   .custom-color input[type="color"] { width: 3rem; height: 2rem; padding: 0; border: 0; border-radius: 6px; background: none; cursor: pointer; }
   .custom-color input[type="text"], .seed-row input {
     flex: 1; min-width: 0; padding: .3rem .5rem;
@@ -109,12 +115,13 @@
   }
   .custom-color input[type="text"]:focus, .seed-row input:focus { border-color: var(--accent); outline: none; }
   .custom-color input[aria-invalid="true"], .seed-row input[aria-invalid="true"] { border-color: #ef4444; }
-  .seed-row button {
+  .seed-row button, #color-default {
     padding: .3rem .6rem;
     border: 1px solid var(--card-hover); border-radius: 6px;
     background: var(--card); color: var(--text); font: inherit; font-size: .8rem; cursor: pointer; white-space: nowrap;
   }
-  .seed-row button:hover { background: var(--card-hover); }
+  .seed-row button:hover, #color-default:hover:not(:disabled) { background: var(--card-hover); }
+  #color-default:disabled { opacity: .45; cursor: default; }
   .seed-note { margin: 0; font-size: .75rem; color: var(--muted); }
   .seed-note:empty { display: none; }
   #prefs-reset {
@@ -258,10 +265,14 @@
           <div id="prefs-theme" class="seg"></div>
           <h3>Background</h3>
           <div id="prefs-bg" class="bg-grid"></div>
-          <h3>Primary color</h3>
-          <div id="prefs-accent" class="custom-color"></div>
-          <h3>Secondary color</h3>
-          <div id="prefs-color" class="custom-color"></div>
+          <h3>Colors</h3>
+          <select id="color-which" aria-label="Which color to change"></select>
+          <div class="custom-color">
+            <input id="color-picker" type="color" title="Pick any color" aria-label="Pick any color">
+            <input id="color-hex" type="text" spellcheck="false" autocomplete="off" aria-label="Type a hex color">
+            <button id="color-default" type="button" title="Go back to the default color">Default</button>
+          </div>
+          <p id="color-mode" class="seed-note"></p>
           <h3>Seed</h3>
           <div class="seed-row">
             <input id="seed" type="text" inputmode="numeric" autocomplete="off" spellcheck="false" aria-label="Seed: copy yours, or paste one and press Load">
@@ -528,34 +539,68 @@ function choice(button, name, value) {
   return button;
 }
 
-// A color picker plus a hex field; either one saves the color as you go.
-function colorRow(row, name) {
-  row.innerHTML = "";
-  const hex = hexOf(pref(name));
-  const picker = el("input");
-  picker.type = "color";
-  picker.value = hex;
-  picker.title = picker.ariaLabel = "Pick any color";
-  const typed = el("input");
-  typed.type = "text";
-  typed.value = hex;
-  typed.placeholder = "#hex";
-  typed.spellcheck = false;
-  typed.ariaLabel = "Type a hex color";
-  const use = (value) => {
-    savePref(name, value.toLowerCase());
-    applyTheme();
-    showSeed();
-  };
-  picker.addEventListener("input", () => { typed.value = picker.value; typed.removeAttribute("aria-invalid"); use(picker.value); });
-  typed.addEventListener("input", () => {
-    const v = typed.value.trim().replace(/^#?/, "#");
-    const ok = isHex(v);
-    typed.setAttribute("aria-invalid", String(!ok && typed.value.trim() !== ""));
-    if (ok) { picker.value = v; use(v); }
-  });
-  row.append(picker, typed);
+// ---- Colors: pick one in the dropdown, then set it with the picker or a hex code ----
+const COLOR_LABELS = {
+  accent: "Primary: headings and highlights",
+  color: "Secondary: page tint",
+  text: "Primary text: title, date and links",
+  muted: "Secondary text: descriptions",
+  card: "Card: tiles, lists and search box",
+};
+let editing = "accent";
+const colorWhich = $("color-which");
+const colorPicker = $("color-picker");
+const colorHex = $("color-hex");
+
+for (const [name, label] of Object.entries(COLOR_LABELS)) {
+  const option = el("option", null, label);
+  option.value = name;
+  colorWhich.append(option);
 }
+
+const modeEditing = () => (isDark() ? "dark" : "light");
+
+// Show the color being edited: the visitor's own, or the default in grey as a placeholder.
+function showColor() {
+  const mode = modeEditing();
+  const own = customColor(editing, mode);
+  colorWhich.value = editing;
+  colorPicker.value = own ? hexOf(own) : CURRENT[editing];
+  colorHex.value = own ? hexOf(own) : "";
+  colorHex.placeholder = `${CURRENT[editing]} (default)`;
+  colorHex.removeAttribute("aria-invalid");
+  $("color-default").disabled = !own;
+  $("color-mode").textContent = `These colors are for ${mode} mode. Switch to ${mode === "dark" ? "light" : "dark"} mode to set its own colors.`;
+}
+
+function setEditing(value) {
+  setColor(editing, modeEditing(), value);
+  applyTheme();
+  $("color-default").disabled = !value;
+  showSeed();
+}
+
+colorWhich.addEventListener("change", () => {
+  editing = colorWhich.value;
+  showColor();
+});
+colorPicker.addEventListener("input", () => {
+  colorHex.value = colorPicker.value;
+  colorHex.removeAttribute("aria-invalid");
+  setEditing(colorPicker.value);
+});
+colorHex.addEventListener("input", () => {
+  const v = colorHex.value.trim().replace(/^#?/, "#");
+  colorHex.setAttribute("aria-invalid", String(!isHex(v) && colorHex.value.trim() !== ""));
+  if (isHex(v)) {
+    colorPicker.value = v;
+    setEditing(v);
+  }
+});
+$("color-default").addEventListener("click", () => {
+  setEditing(null);
+  showColor();
+});
 
 // ---- Seed: the visitor's whole look as a number ----
 const seedEl = $("seed");
@@ -620,8 +665,7 @@ function buildPrefs(note) {
     bgs.append(b);
   }
 
-  colorRow($("prefs-accent"), "accent");
-  colorRow($("prefs-color"), "color");
+  showColor();
   showSeed(note);
 }
 
