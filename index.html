@@ -20,6 +20,7 @@
     --bg-image: none;
     --bg-blur: 0px;
     --bg-brightness: 1;
+    --bg-wash: transparent;
     --bg-saturate: 1;
     --card-blur: 0px;
     --mono-filter: invert(0.9);
@@ -40,7 +41,7 @@
     position: fixed;
     inset: -40px; /* hide blurred edges */
     z-index: -1;
-    background: var(--bg-image) center / cover no-repeat;
+    background: linear-gradient(var(--bg-wash), var(--bg-wash)), var(--bg-image) center / cover no-repeat;
     filter: blur(var(--bg-blur)) brightness(var(--bg-brightness)) saturate(var(--bg-saturate));
   }
   a { color: inherit; }

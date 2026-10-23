@@ -19,9 +19,13 @@ color: slate       # slate, gray, zinc, neutral, stone, red, orange, amber,
 accent: sky        # any color name above, or a hex in quotes like "#38bdf8"
 
 background:
-  image: ""        # a local image in the project root, e.g. background.jpg. "" = plain color
+  # A local image: one from backgrounds/ (alps-clouds, beach, desert-stars, earth-night,
+  # forest, gradient-ocean, gradient-rainbow, highlands, misty-hills, mountain-valley,
+  # night-sky, red-mountains, starry-peaks, yosemite), e.g. backgrounds/forest.jpg,
+  # or your own file such as background.jpg. "" = plain color.
+  image: ""
   blur: 0          # px
-  brightness: 0.7  # 0–1; darkens the image so text stays readable
+  brightness: 0.7  # 0–1; lower = easier to read: dims the image in dark mode, fades it in light mode
   saturate: 1      # 0 = grayscale, 1 = normal
   cardOpacity: 0.6 # how solid cards are on top of the image (0–1)
   cardBlur: md     # frosted cards, like Homepage: none, xs, sm, md, lg, xl, or a number of px

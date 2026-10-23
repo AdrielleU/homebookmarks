@@ -179,7 +179,7 @@ To add an icon, save the file into `icons/` and use its file name. Sources (the 
 
 ## Theme
 
-`settings.yaml` sets the title, the search engine, the page `size` (`small`, `medium`, `large`), the starting light/dark mode, colors (`slate`, `blue`, `emerald`, …) and an optional background image (put the image in the project root and set `background.image`). Anything you leave out uses the default from `lib/site.js`. A typo shows the error and line number on the page, same as `bookmarks.yaml`.
+`settings.yaml` sets the title, the search engine, the page `size` (`small`, `medium`, `large`), the starting light/dark mode, colors (`slate`, `blue`, `emerald`, …) and an optional background image: pick one of the photos in `backgrounds/` (`background.image: backgrounds/forest.jpg`) or add your own file and point to it. Text stays readable in both modes: dark mode dims the image and light mode fades it toward white, by the amount set in `background.brightness`. Anything you leave out uses the default from `lib/site.js`. A typo shows the error and line number on the page, same as `bookmarks.yaml`.
 
 ### Views and buttons
 
