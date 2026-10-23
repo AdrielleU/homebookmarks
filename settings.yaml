@@ -11,10 +11,11 @@ view: pages        # pages (one page at a time) or all (every link on the home s
 viewToggle: true   # show the pages/all button
 
 theme: light       # starting mode: light, dark, or auto (follow the visitor's device)
-themeToggle: true  # show the light/dark button; each visitor's choice is remembered in their browser
-color: slate       # slate, gray, zinc, neutral, stone, red, orange, amber,
-                   # emerald, teal, sky, blue, indigo, violet, purple, rose
-accent: sky        # any color name above, or a hex in quotes like "#38bdf8"
+customize: true    # show the gear menu, where each visitor can pick their own mode, background
+                   # and colors (remembered in their browser). These settings are the starting look.
+color: slate       # secondary color, tints the page and cards: slate, gray, zinc, neutral, stone, red,
+                   # orange, amber, emerald, teal, sky, blue, indigo, violet, purple, rose, or a hex like "#4f46e5"
+accent: sky        # primary color, for highlights: any color name above, or a hex in quotes like "#38bdf8"
 
 background:
   # A local image: one from backgrounds/ (alps-clouds, beach, desert-stars, earth-night,

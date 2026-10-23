@@ -183,12 +183,12 @@ To add an icon, save the file into `icons/` and use its file name. Sources (the 
 
 ### Views and buttons
 
-Two buttons in the top-right corner let each visitor switch modes. Their choices are remembered in their own browser; `settings.yaml` sets the starting mode, and `<name>Toggle: false` hides a button.
+Two buttons in the top-right corner let each visitor change how the page looks. Their choices are remembered in their own browser only; `settings.yaml` sets what everyone starts with.
 
 | Setting | Options | Button |
 |---|---|---|
-| `view` | `pages`: one page at a time, team pages as tiles (Okta style)<br>`all`: the home screen lists every link from every page, one column per page (Homepage style); team pages still open on their own | grid / rows |
-| `theme` | `light`, `dark`, `auto` (follow the device) | sun / moon |
+| `view` | `pages`: one page at a time, team pages as tiles (Okta style)<br>`all`: the home screen lists every link from every page, one column per page (Homepage style); team pages still open on their own. `viewToggle: false` hides the button | grid / rows |
+| `customize` | The gear opens a menu with the mode (`light`, `dark`, `auto` to follow the device), a background (any photo in `backgrounds/`, the site's own image, or none), and the primary (`accent`) and secondary (`color`) colors: pick a swatch, use the color picker, or type a hex code. "Reset to site defaults" clears the visitor's choices. `customize: false` hides the gear | gear |
 
 ## Test locally
 

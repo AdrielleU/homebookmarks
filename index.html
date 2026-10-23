@@ -64,7 +64,61 @@
     cursor: pointer;
   }
   .tool svg { width: 1.1rem; height: 1.1rem; fill: currentColor; }
-  .tool:hover, .tool:focus-visible { background: var(--card-hover); outline: none; }
+  .tool:hover, .tool:focus-visible, .tool[aria-expanded="true"] { background: var(--card-hover); outline: none; }
+
+  /* Gear menu: each visitor's mode, background and colors */
+  .tools { position: relative; }
+  #prefs {
+    position: absolute; top: calc(100% + .5rem); right: 0; z-index: 5;
+    width: min(21rem, calc(100vw - 32px));
+    max-height: calc(100vh - 6rem); overflow-y: auto;
+    padding: .875rem;
+    border: 1px solid var(--card-hover);
+    border-radius: 14px;
+    background: var(--bg);
+    box-shadow: 0 20px 50px rgb(0 0 0 / .35);
+    display: grid; gap: .5rem;
+  }
+  #prefs[hidden] { display: none; }
+  #prefs h3 { margin: .375rem 0 0; font-size: .75rem; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+  #prefs h3:first-child { margin-top: 0; }
+  .seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: .25rem; padding: .25rem; border-radius: 10px; background: var(--card); }
+  .seg button {
+    display: flex; align-items: center; justify-content: center; gap: .375rem;
+    padding: .4rem; border: 0; border-radius: 7px;
+    background: transparent; color: var(--text); font: inherit; font-size: .85rem; cursor: pointer;
+  }
+  .seg button svg { width: 1rem; height: 1rem; fill: currentColor; }
+  .seg button[aria-pressed="true"] { background: var(--card-hover); font-weight: 600; }
+  .bg-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: .375rem; }
+  .bg-grid button {
+    aspect-ratio: 16 / 10; padding: 0; overflow: hidden;
+    border: 2px solid transparent; border-radius: 8px;
+    background: var(--card) center / cover; color: var(--muted); font: inherit; font-size: .7rem; cursor: pointer;
+  }
+  .bg-grid button[aria-pressed="true"] { border-color: var(--accent); }
+  .swatches { display: flex; flex-wrap: wrap; gap: .375rem; align-items: center; }
+  .swatches button {
+    width: 1.5rem; height: 1.5rem; padding: 0;
+    border: 2px solid transparent; border-radius: 50%;
+    box-shadow: inset 0 0 0 2px var(--bg); cursor: pointer;
+  }
+  .swatches button[aria-pressed="true"] { border-color: var(--text); }
+  .custom-color { display: flex; gap: .375rem; align-items: center; width: 100%; margin-top: .125rem; }
+  .custom-color input[type="color"] { width: 2rem; height: 1.75rem; padding: 0; border: 0; border-radius: 6px; background: none; cursor: pointer; }
+  .custom-color input[type="text"] {
+    flex: 1; min-width: 0; padding: .3rem .5rem;
+    border: 1px solid var(--card-hover); border-radius: 6px;
+    background: var(--card); color: var(--text); font: inherit; font-size: .85rem; font-family: ui-monospace, monospace;
+  }
+  .custom-color input[type="text"]:focus { border-color: var(--accent); outline: none; }
+  .custom-color input[aria-invalid="true"] { border-color: #ef4444; }
+  #prefs-reset {
+    margin-top: .375rem; padding: .45rem;
+    border: 1px solid var(--card-hover); border-radius: 8px;
+    background: transparent; color: var(--muted); font: inherit; font-size: .85rem; cursor: pointer;
+  }
+  #prefs-reset:hover { color: var(--text); background: var(--card); }
 
   #title { display: flex; align-items: center; gap: 12px; font-size: 1.7rem; font-weight: 600; margin: 20px 0 4px; }
   #title .icon { width: 2.25rem; height: 2.25rem; font-size: 1.9rem; }
@@ -194,7 +248,18 @@
       <span id="clock"></span>
       <div class="tools">
         <button id="view-toggle" class="tool" type="button" hidden></button>
-        <button id="theme-toggle" class="tool" type="button" hidden></button>
+        <button id="prefs-toggle" class="tool" type="button" aria-haspopup="dialog" aria-expanded="false" hidden></button>
+        <div id="prefs" role="dialog" aria-label="Appearance" hidden>
+          <h3>Mode</h3>
+          <div id="prefs-theme" class="seg"></div>
+          <h3>Background</h3>
+          <div id="prefs-bg" class="bg-grid"></div>
+          <h3>Primary color</h3>
+          <div id="prefs-accent" class="swatches"></div>
+          <h3>Secondary color</h3>
+          <div id="prefs-color" class="swatches"></div>
+          <button id="prefs-reset" type="button">Reset to site defaults</button>
+        </div>
       </div>
     </div>
   </div>
@@ -405,10 +470,13 @@ function render() {
 }
 
 // ---- Toolbar: each button shows what clicking it switches to ----
+const svgIcon = (name) => `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${ICONS[name]}"/></svg>`;
 const ICONS = {
   pages: "M3 11H11V3H3M5 5H9V9H5M13 21H21V13H13M15 15H19V19H15M3 21H11V13H3M5 15H9V19H5M13 3V11H21V3M19 9H15V5H19Z",
   all: "M21 13H3A1 1 0 0 0 2 14V20A1 1 0 0 0 3 21H21A1 1 0 0 0 22 20V14A1 1 0 0 0 21 13M20 19H4V15H20M21 3H3A1 1 0 0 0 2 4V10A1 1 0 0 0 3 11H21A1 1 0 0 0 22 10V4A1 1 0 0 0 21 3M20 9H4V5H20Z",
   light: "M12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,2L14.39,5.42C13.65,5.15 12.84,5 12,5C11.16,5 10.35,5.15 9.61,5.42L12,2M3.34,7L7.5,6.65C6.9,7.16 6.36,7.78 5.94,8.5C5.5,9.24 5.25,10 5.11,10.79L3.34,7M3.36,17L5.12,13.23C5.26,14 5.53,14.78 5.95,15.5C6.37,16.24 6.91,16.86 7.5,17.37L3.36,17M20.65,7L18.88,10.79C18.74,10 18.47,9.23 18.05,8.5C17.63,7.78 17.1,7.15 16.5,6.64L20.65,7M20.64,17L16.5,17.36C17.09,16.85 17.62,16.22 18.04,15.5C18.46,14.77 18.73,14 18.87,13.21L20.64,17M12,22L9.59,18.56C10.33,18.83 11.14,19 12,19C12.82,19 13.63,18.83 14.37,18.56L12,22Z",
+  gear: "M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z",
+  auto: "M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20V4Z",
   dark: "M17.75,4.09L15.22,6.03L16.13,9.09L13.5,7.28L10.87,9.09L11.78,6.03L9.25,4.09L12.44,4L13.5,1L14.56,4L17.75,4.09M21.25,11L19.61,12.25L20.2,14.23L18.5,13.06L16.8,14.23L17.39,12.25L15.75,11L17.81,10.95L18.5,9L19.19,10.95L21.25,11M18.97,15.95C19.8,15.87 20.69,17.05 20.16,17.8C19.84,18.25 19.5,18.67 19.08,19.07C15.17,23 8.84,23 4.94,19.07C1.03,15.17 1.03,8.83 4.94,4.93C5.34,4.53 5.76,4.17 6.21,3.85C6.96,3.32 8.14,4.21 8.06,5.04C7.79,7.9 8.75,10.87 10.95,13.06C13.14,15.26 16.1,16.22 18.97,15.95M17.33,17.97C14.5,17.81 11.7,16.64 9.53,14.5C7.36,12.31 6.2,9.5 6.04,6.68C3.23,9.82 3.34,14.64 6.35,17.66C9.37,20.67 14.19,20.78 17.33,17.97Z",
 };
 
@@ -417,14 +485,13 @@ function setTool(id, show, icon, label) {
   button.hidden = !show;
   button.title = label;
   button.setAttribute("aria-label", label);
-  button.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${ICONS[icon]}"/></svg>`;
+  button.innerHTML = svgIcon(icon);
 }
 
 function updateToolbar() {
   const all = pref("view") === "all";
   setTool("view-toggle", SITE.viewToggle, all ? "pages" : "all", all ? "Show one page at a time" : "Show everything on one page");
-  const dark = isDark();
-  setTool("theme-toggle", SITE.themeToggle, dark ? "light" : "dark", dark ? "Switch to light mode" : "Switch to dark mode");
+  setTool("prefs-toggle", SITE.customize, "gear", "Appearance");
 }
 
 $("view-toggle").addEventListener("click", () => {
@@ -433,10 +500,105 @@ $("view-toggle").addEventListener("click", () => {
   render();
   window.scrollTo(0, 0);
 });
-$("theme-toggle").addEventListener("click", () => {
-  savePref("theme", isDark() ? "light" : "dark");
+
+// ---- Gear menu ----
+const prefsEl = $("prefs");
+const prefsToggle = $("prefs-toggle");
+
+function choice(button, name, value) {
+  button.type = "button";
+  button.setAttribute("aria-pressed", String(pref(name) === value));
+  button.addEventListener("click", () => {
+    savePref(name, value);
+    applyTheme();
+    buildPrefs();
+  });
+  return button;
+}
+
+// One row of color swatches plus a picker and a hex field for any other color.
+function colorRow(container, name) {
+  container.innerHTML = "";
+  for (const [color, shades] of Object.entries(PALETTES)) {
+    const b = choice(el("button"), name, color);
+    b.style.background = shades[4];
+    b.title = b.ariaLabel = color;
+    container.append(b);
+  }
+  const current = pref(name);
+  const hex = isHex(current) ? current : (shadesOf(current) ?? PALETTES.slate)[4];
+  const row = el("div", "custom-color");
+  const picker = el("input");
+  picker.type = "color";
+  picker.value = hex;
+  picker.title = picker.ariaLabel = "Pick any color";
+  const typed = el("input");
+  typed.type = "text";
+  typed.value = isHex(current) ? current : "";
+  typed.placeholder = "#hex, e.g. " + hex;
+  typed.spellcheck = false;
+  typed.ariaLabel = "Type a hex color";
+  const use = (value) => {
+    savePref(name, value.toLowerCase());
+    applyTheme();
+  };
+  picker.addEventListener("input", () => { typed.value = picker.value; typed.removeAttribute("aria-invalid"); use(picker.value); });
+  picker.addEventListener("change", buildPrefs);
+  typed.addEventListener("input", () => {
+    const v = typed.value.trim().replace(/^#?/, "#");
+    const ok = isHex(v);
+    typed.setAttribute("aria-invalid", String(!ok && typed.value.trim() !== ""));
+    if (ok) { picker.value = v; use(v); }
+  });
+  typed.addEventListener("change", () => { if (isHex(typed.value.trim().replace(/^#?/, "#"))) buildPrefs(); });
+  row.append(picker, typed);
+  container.append(row);
+}
+
+function buildPrefs() {
+  const theme = $("prefs-theme");
+  theme.innerHTML = "";
+  for (const [mode, label] of [["light", "Light"], ["dark", "Dark"], ["auto", "Auto"]]) {
+    const b = choice(el("button"), "theme", mode);
+    b.innerHTML = svgIcon(mode);
+    b.append(label);
+    theme.append(b);
+  }
+
+  // The site's own image first (if it has one), then plain color, then the bundled photos.
+  const bgs = $("prefs-bg");
+  bgs.innerHTML = "";
+  const own = SITE.background.image;
+  const options = [];
+  if (own && !BACKGROUNDS.some((n) => own === `backgrounds/${n}.jpg`)) options.push({ value: own, thumb: own, label: "Site default" });
+  options.push({ value: "", label: "None" });
+  for (const n of BACKGROUNDS) options.push({ value: `backgrounds/${n}.jpg`, thumb: `backgrounds/thumbs/${n}.jpg`, label: n.replace(/-/g, " ") });
+  for (const o of options) {
+    const b = choice(el("button"), "background", o.value);
+    b.title = b.ariaLabel = o.label;
+    if (o.thumb) b.style.backgroundImage = `url("${encodeURI(o.thumb)}")`;
+    else b.textContent = o.label;
+    bgs.append(b);
+  }
+
+  colorRow($("prefs-accent"), "accent");
+  colorRow($("prefs-color"), "color");
+}
+
+function setPrefsOpen(open) {
+  prefsEl.hidden = !open;
+  prefsToggle.setAttribute("aria-expanded", String(open));
+  if (open) buildPrefs();
+}
+
+prefsToggle.addEventListener("click", () => setPrefsOpen(prefsEl.hidden));
+$("prefs-reset").addEventListener("click", () => {
+  resetPrefs();
   applyTheme();
-  updateToolbar();
+  buildPrefs();
+});
+document.addEventListener("mousedown", (e) => {
+  if (!prefsEl.hidden && !prefsEl.contains(e.target) && !prefsToggle.contains(e.target)) setPrefsOpen(false);
 });
 
 // ---- Quick-launch popup ----
@@ -537,6 +699,10 @@ launcherEl.addEventListener("mousedown", (e) => {
 // ---- Opening the popup: click the search box, press /, or just start typing ----
 searchEl.addEventListener("click", () => openLauncher());
 document.addEventListener("keydown", (e) => {
+  if (!prefsEl.hidden) {
+    if (e.key === "Escape") { setPrefsOpen(false); prefsToggle.focus(); }
+    return;
+  }
   if (!launcherEl.hidden || e.ctrlKey || e.metaKey || e.altKey) return;
   const typingInField = e.target.closest?.("input, textarea, select, [contenteditable]") && !e.target.readOnly;
   if (typingInField) return;

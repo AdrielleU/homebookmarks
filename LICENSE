@@ -29,7 +29,7 @@ Third-party files included in this repository keep their own licenses:
 - icons/default/si-*.svg: Simple Icons, CC0 1.0. https://simpleicons.org
 - Other icons in icons/default/: mostly from dashboard-icons, Apache License 2.0.
   https://github.com/homarr-labs/dashboard-icons
-- backgrounds/*.jpg: photos from Unsplash, Unsplash License. https://unsplash.com/license
+- backgrounds/*.jpg and backgrounds/thumbs/*.jpg: photos from Unsplash, Unsplash License. https://unsplash.com/license
   Each file's source is listed in backgrounds/SOURCES.md.
 
 Product names and logos are trademarks of their respective owners and are used
