@@ -162,8 +162,10 @@
 
   #content { display: grid; gap: 2.25rem; }
   .section h2 { font-size: .8rem; text-transform: uppercase; letter-spacing: .08em; color: var(--accent); margin: 0 0 12px; }
-  /* Up to 4 columns per row (fewer on narrow screens); the 3 gaps between them are 4.5rem. */
-  .lists { display: grid; grid-template-columns: repeat(auto-fill, minmax(max(16rem, calc((100% - 4.5rem) / 4)), 1fr)); gap: 1.75rem 1.5rem; }
+  /* Up to 4 columns (fewer on narrow screens, see layoutColumns). Each column stacks its
+     sections, so a section sits right under the one above it instead of lining up in rows. */
+  .lists { display: grid; grid-template-columns: repeat(var(--cols, 4), minmax(0, 1fr)); gap: 1.5rem; align-items: start; }
+  .lists-col { display: grid; gap: 1.75rem; align-content: start; }
   .lists .section h2 { margin-bottom: 10px; }
 
   .icon { width: 1.5rem; height: 1.5rem; flex: none; border-radius: 4px; display: inline-grid; place-items: center; font-size: 1.25rem; line-height: 1; object-fit: contain; }
@@ -414,7 +416,25 @@ function renderSections(sections, container = contentEl) {
       listGrid.append(node);
     }
   }
+  container.querySelectorAll(".lists").forEach((grid) => layoutColumns(grid));
 }
+
+// Deal a grid's sections into columns in order (section i goes to column i % n), as many
+// columns as fit at 16rem each, up to 4. Runs again when the window is resized.
+function layoutColumns(grid) {
+  grid.sections ??= [...grid.children];
+  const rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
+  const gap = 1.5 * rem;
+  const n = Math.max(1, Math.min(4, Math.floor((grid.clientWidth + gap) / (16 * rem + gap))));
+  if (grid.columns === n) return;
+  grid.columns = n;
+  grid.style.setProperty("--cols", n);
+  const cols = Array.from({ length: n }, () => el("div", "lists-col"));
+  grid.sections.forEach((section, i) => cols[i % n].append(section));
+  grid.replaceChildren(...cols);
+}
+
+window.addEventListener("resize", () => document.querySelectorAll(".lists").forEach((grid) => layoutColumns(grid)));
 
 const sectionsOf = (p) => (p.sections ?? []).map((s) => ({ title: s.title, icon: s.icon, layout: s.layout, items: s.links ?? [] }));
 
