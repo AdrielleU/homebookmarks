@@ -7,7 +7,7 @@ title: Home
 searchUrl: https://www.google.com/search?q=
 
 size: medium       # small, medium, or large (or a number: base text size in px)
-view: pages        # pages (one page at a time) or all (every link on the home screen, one column per page)
+view: all          # all (every link on the home screen, one column per page) or pages (one page at a time)
 viewToggle: true   # show the pages/all button
 
 theme: light       # starting mode: light, dark, or auto (follow the visitor's device)
