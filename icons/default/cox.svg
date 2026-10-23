@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 500 500" style="enable-background:new 0 0 500 500;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:url(#Shape_1_);}
+</style>
+<title>CB Favicon</title>
+<desc>Cox Communications</desc>
+<g id="Symbols">
+	<g>
+		<g id="Iris-5">
+			
+				<linearGradient id="Shape_1_" gradientUnits="userSpaceOnUse" x1="-395.9747" y1="1113.5427" x2="-395.4373" y2="1113.0052" gradientTransform="matrix(500 0 0 -500 198103 556887)">
+				<stop  offset="0" style="stop-color:#00AAF4"/>
+				<stop  offset="1" style="stop-color:#002F87"/>
+			</linearGradient>
+			<path id="Shape" class="st0" d="M250,500C111.93,500,0,388.07,0,250S111.93,0,250,0s250,111.93,250,250S388.07,500,250,500z
+				 M307.17,250c0-31.57-25.6-57.17-57.17-57.17s-57.17,25.6-57.17,57.17s25.6,57.17,57.17,57.17
+				C281.57,307.16,307.16,281.57,307.17,250L307.17,250z"/>
+		</g>
+	</g>
+</g>
+</svg>

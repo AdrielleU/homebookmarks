@@ -1,0 +1,670 @@
+<!doctype html>
+<html lang="en" class="loading">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Only load things from this site, on every host. Clicked links still go anywhere. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self'; base-uri 'none'; form-action 'none'">
+<title>Home</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏠</text></svg>">
+<style>
+  /* Defaults only; settings.yaml overrides these on load. */
+  :root {
+    color-scheme: dark;
+    --bg: #0f172a;
+    --card: #1e293b;
+    --card-hover: #334155;
+    --text: #f1f5f9;
+    --muted: #94a3b8;
+    --accent: #38bdf8;
+    --bg-image: none;
+    --bg-blur: 0px;
+    --bg-brightness: 1;
+    --bg-saturate: 1;
+    --card-blur: 0px;
+    --mono-filter: invert(0.9);
+  }
+  /* Everything is sized in rem, so settings.yaml `size` scales the whole page from here. */
+  html { font-size: 14px; }
+  * { box-sizing: border-box; }
+  html.loading body { visibility: hidden; } /* avoid a flash of the default theme before settings.yaml loads */
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--text);
+    font: 1rem/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  body::before {
+    content: "";
+    position: fixed;
+    inset: -40px; /* hide blurred edges */
+    z-index: -1;
+    background: var(--bg-image) center / cover no-repeat;
+    filter: blur(var(--bg-blur)) brightness(var(--bg-brightness)) saturate(var(--bg-saturate));
+  }
+  a { color: inherit; }
+  main { max-width: 1200px; margin: 0 auto; padding: 24px 16px 64px; }
+
+  .topbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; min-height: 24px; }
+  #crumbs { display: flex; flex-wrap: wrap; gap: 6px; color: var(--muted); font-size: .9rem; }
+  #crumbs a { text-decoration: none; }
+  #crumbs a:hover { color: var(--accent); }
+  #crumbs .sep { opacity: .5; }
+  #clock { color: var(--muted); font-size: .9rem; font-variant-numeric: tabular-nums; }
+  .topbar-right { display: flex; align-items: center; gap: .75rem; margin-left: auto; }
+  .tools { display: flex; gap: .375rem; }
+  .tool {
+    display: grid; place-items: center;
+    width: 2rem; height: 2rem; padding: 0;
+    border: 0; border-radius: 50%;
+    background: var(--card);
+    color: var(--text);
+    cursor: pointer;
+  }
+  .tool svg { width: 1.1rem; height: 1.1rem; fill: currentColor; }
+  .tool:hover, .tool:focus-visible { background: var(--card-hover); outline: none; }
+
+  #title { display: flex; align-items: center; gap: 12px; font-size: 1.7rem; font-weight: 600; margin: 20px 0 4px; }
+  #title .icon { width: 2.25rem; height: 2.25rem; font-size: 1.9rem; }
+  #desc { color: var(--muted); margin: 0 0 20px; }
+  #desc:empty { display: none; }
+
+  #search {
+    width: 100%;
+    padding: .75rem 1rem;
+    margin: .5rem 0 2rem;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    background: var(--card);
+    color: var(--text);
+    font: inherit;
+    outline: none;
+  }
+  #search:focus { border-color: var(--accent); }
+
+  #content { display: grid; gap: 2.25rem; }
+  .section h2 { font-size: .8rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 0 0 12px; }
+  .lists { display: grid; grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr)); gap: 1.75rem 1.5rem; }
+  .lists .section h2 { margin-bottom: 10px; }
+
+  .icon { width: 1.5rem; height: 1.5rem; flex: none; border-radius: 4px; display: inline-grid; place-items: center; font-size: 1.25rem; line-height: 1; object-fit: contain; }
+  .icon.letter { color: #fff; font-weight: 600; font-size: .8rem; }
+  .icon.letter.len2 { font-size: .65rem; }
+  .icon.letter.len3 { font-size: .5rem; }
+  .tiles .icon.letter.len2 { font-size: .95rem; }
+  .tiles .icon.letter.len3 { font-size: .75rem; }
+  .icon.mono { filter: var(--mono-filter); } /* mdi-/si- icons are black; lighten them on dark themes */
+  .section h2 { display: flex; align-items: center; gap: 8px; }
+  .section h2 .icon { width: 1rem; height: 1rem; font-size: .875rem; }
+  .list a, .tiles a, #search { backdrop-filter: blur(var(--card-blur)); -webkit-backdrop-filter: blur(var(--card-blur)); }
+  .tiles .icon.letter { font-size: 1.25rem; }
+
+  /* List layout (Homepage style) */
+  .list { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; }
+  .list a {
+    display: flex; align-items: center; gap: .75rem;
+    padding: .625rem .75rem;
+    border-radius: 10px;
+    background: var(--card);
+    text-decoration: none;
+    transition: background .15s;
+  }
+  .list .name { font-weight: 500; }
+  .list .desc { display: block; font-size: .8rem; color: var(--muted); }
+
+  /* Tile layout (Okta style) */
+  .tiles { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(7.25rem, 1fr)); gap: .75rem; }
+  .tiles a {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .625rem;
+    height: 7rem;
+    padding: .75rem .5rem;
+    border-radius: 12px;
+    background: var(--card);
+    text-align: center;
+    text-decoration: none;
+    font-size: .85rem;
+    font-weight: 500;
+    transition: background .15s, transform .15s;
+  }
+  .tiles .icon { width: 2.5rem; height: 2.5rem; font-size: 2rem; border-radius: 8px; }
+  .tiles .desc { display: none; }
+  .tiles .name { overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+
+  .list a:hover, .list a:focus-visible, .tiles a:hover, .tiles a:focus-visible { background: var(--card-hover); outline: none; }
+  .tiles a:hover { transform: translateY(-2px); }
+  .tiles a.page { border: 1px dashed var(--muted); background: transparent; }
+  .tiles a.page:hover { background: var(--card); }
+
+  /* Search box as a launcher button in popup mode */
+  #search[readonly] { cursor: pointer; }
+
+  /* Quick-launch popup (Homepage style) */
+  #launcher {
+    position: fixed; inset: 0; z-index: 10;
+    display: flex; justify-content: center; align-items: flex-start;
+    padding: 12vh 16px 16px;
+    background: rgb(0 0 0 / .45);
+    backdrop-filter: blur(2px);
+  }
+  #launcher[hidden] { display: none; }
+  .launcher-box {
+    width: min(40rem, 100%);
+    border: 1px solid var(--card-hover);
+    border-radius: 14px;
+    background: var(--bg);
+    box-shadow: 0 20px 50px rgb(0 0 0 / .35);
+    overflow: hidden;
+  }
+  #launcher-input {
+    width: 100%;
+    padding: 1rem 1.25rem;
+    border: 0; border-bottom: 1px solid var(--card-hover);
+    background: transparent;
+    color: var(--text);
+    font: inherit; font-size: 1.1rem;
+    outline: none;
+  }
+  #launcher-results { list-style: none; margin: 0; padding: .375rem; max-height: 55vh; overflow-y: auto; }
+  #launcher-results:empty { display: none; }
+  #launcher-results a {
+    display: flex; align-items: center; gap: .75rem;
+    padding: .5rem .75rem;
+    border-radius: 8px;
+    text-decoration: none;
+  }
+  #launcher-results a.active { background: var(--card-hover); }
+  #launcher-results .name { font-weight: 500; }
+  #launcher-results .desc { display: block; font-size: .8rem; color: var(--muted); }
+  #launcher-results .where { margin-left: auto; padding-left: .75rem; font-size: .75rem; color: var(--muted); white-space: nowrap; }
+  .launcher-hint { padding: .5rem 1.25rem; border-top: 1px solid var(--card-hover); font-size: .75rem; color: var(--muted); }
+
+  .empty { color: var(--muted); }
+  .error { margin: 0; padding: 16px; border-radius: 10px; background: var(--card); white-space: pre-wrap; font-size: .85rem; }
+</style>
+<script src="lib/js-yaml.min.js"></script>
+<script src="lib/site.js"></script>
+</head>
+<body>
+<main>
+  <div class="topbar">
+    <nav id="crumbs" aria-label="Breadcrumb"></nav>
+    <div class="topbar-right">
+      <span id="clock"></span>
+      <div class="tools">
+        <button id="view-toggle" class="tool" type="button" hidden></button>
+        <button id="search-toggle" class="tool" type="button" hidden></button>
+        <button id="theme-toggle" class="tool" type="button" hidden></button>
+      </div>
+    </div>
+  </div>
+  <h1 id="title"></h1>
+  <p id="desc"></p>
+  <input id="search" type="search" autocomplete="off">
+  <div id="content"></div>
+</main>
+
+<div id="launcher" hidden>
+  <div class="launcher-box" role="dialog" aria-label="Search bookmarks">
+    <input id="launcher-input" type="search" placeholder="Search all bookmarks…" autocomplete="off">
+    <ul id="launcher-results"></ul>
+    <div class="launcher-hint">↑ ↓ to move · Enter to open · Ctrl+Enter for a new tab · Esc to close</div>
+  </div>
+</div>
+
+<script>
+// Pages from bookmarks.yaml, keyed by slug, in file order.
+const pages = new Map();
+
+const $ = (id) => document.getElementById(id);
+const contentEl = $("content");
+const searchEl = $("search");
+
+function el(tag, cls, text) {
+  const node = document.createElement(tag);
+  if (cls) node.className = cls;
+  if (text != null) node.textContent = text;
+  return node;
+}
+
+const parentOf = (p) => (p.slug === "home" ? null : p.parent ?? "home");
+const childrenOf = (slug) => [...pages.values()].filter((p) => p.slug !== "home" && parentOf(p) === slug);
+
+function isSafeUrl(url) {
+  try {
+    return ["http:", "https:"].includes(new URL(url, location.href).protocol);
+  } catch {
+    return false;
+  }
+}
+
+const iconSlug = (name) => String(name).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+
+// Text tile: the link's abbr (as in Homepage), or its first letter.
+function letterIcon(name, abbr) {
+  const text = abbr ? String(abbr).trim().slice(0, 3) : (String(name).trim()[0] ?? "?").toUpperCase();
+  const span = el("span", `icon letter len${text.length}`, text);
+  let hash = 0;
+  for (const ch of String(name)) hash = (hash * 31 + ch.charCodeAt(0)) | 0;
+  span.style.background = `hsl(${Math.abs(hash) % 360} 55% 45%)`;
+  return span;
+}
+
+// icon can be:
+//   an emoji                  "📊"
+//   an icon file              "github" or "github.svg"  (icons/ first, then icons/default/)
+//   a Material Design icon    "mdi-bank"                 (tinted to match the theme)
+//   a Simple Icons icon       "si-canva"                 (tinted to match the theme)
+// Without one, look for a file named after the link ("AWS Console" -> aws-console.svg/.png),
+// then fall back to the abbr or first letter. Icons are always local; nothing loads off-site.
+function iconEl(icon, name = "", abbr) {
+  if (icon && !/^[\w./-]+$/.test(icon)) return el("span", "icon", icon);
+  const file = icon ?? iconSlug(name);
+  if (!file) return letterIcon(name, abbr);
+  const files = /\.\w+$/.test(file) ? [file] : [`${file}.svg`, `${file}.png`];
+  const candidates = [...files.map((f) => `icons/${f}`), ...files.map((f) => `icons/default/${f}`)];
+  const img = el("img", /^(mdi|si)-/.test(file) ? "icon mono" : "icon");
+  img.alt = "";
+  img.onerror = () => {
+    const src = candidates.shift();
+    if (src) img.src = src;
+    else img.replaceWith(letterIcon(name, abbr));
+  };
+  img.src = candidates.shift();
+  return img;
+}
+
+// item: { name, url, desc?, icon?, newTab? } or a page link { name, href, icon, isPage }
+function itemEl(item) {
+  const li = el("li");
+  const a = el("a", item.isPage ? "page" : null);
+  a.href = item.href ?? (isSafeUrl(item.url) ? item.url : "#");
+  if (item.newTab) { a.target = "_blank"; a.rel = "noopener"; }
+  if (item.desc) a.title = item.desc;
+  const text = el("span");
+  text.append(el("span", "name", item.name));
+  if (item.desc) text.append(el("span", "desc", item.desc));
+  a.append(iconEl(item.icon, item.name, item.abbr), text);
+  li.append(a);
+  return li;
+}
+
+function sectionEl(title, layout, items, icon) {
+  const section = el("section", "section");
+  if (title) {
+    const h2 = el("h2");
+    if (icon) h2.append(iconEl(icon, title));
+    h2.append(el("span", null, title));
+    section.append(h2);
+  }
+  const ul = el("ul", layout === "tiles" ? "tiles" : "list");
+  items.forEach((item) => ul.append(itemEl(item)));
+  section.append(ul);
+  return section;
+}
+
+const pageItem = (p) => ({ name: p.title ?? p.slug, desc: p.description, icon: p.icon ?? "📁", href: `#/${p.slug}`, isPage: true });
+
+// Lay out sections in order; consecutive list sections share a multi-column grid.
+function renderSections(sections, container = contentEl) {
+  let listGrid = null;
+  for (const s of sections) {
+    const node = sectionEl(s.title, s.layout, s.items, s.icon);
+    if (s.layout === "tiles") {
+      listGrid = null;
+      container.append(node);
+    } else {
+      if (!listGrid) container.append((listGrid = el("div", "lists")));
+      listGrid.append(node);
+    }
+  }
+}
+
+const sectionsOf = (p) => (p.sections ?? []).map((s) => ({ title: s.title, icon: s.icon, layout: s.layout, items: s.links ?? [] }));
+
+function ancestorsOf(p) {
+  const chain = [];
+  const seen = new Set();
+  for (let cur = parentOf(p); cur && pages.has(cur) && !seen.has(cur); cur = parentOf(pages.get(cur))) {
+    seen.add(cur);
+    chain.unshift(pages.get(cur));
+  }
+  return chain;
+}
+
+function currentSlug() {
+  return decodeURIComponent(location.hash.replace(/^#\/?/, "")) || "home";
+}
+
+function renderHeader(p) {
+  const crumbs = $("crumbs");
+  crumbs.innerHTML = "";
+  ancestorsOf(p).forEach((c) => {
+    const a = el("a", null, c.title ?? c.slug);
+    a.href = `#/${c.slug}`;
+    crumbs.append(a, el("span", "sep", "/"));
+  });
+
+  const title = $("title");
+  title.innerHTML = "";
+  if (p.icon) title.append(iconEl(p.icon, p.title ?? p.slug));
+  title.append(el("span", null, p.title ?? p.slug));
+  $("desc").textContent = p.description ?? "";
+  document.title = p.slug === "home" ? SITE.title : `${p.title ?? p.slug} · ${SITE.title}`;
+}
+
+function renderPage() {
+  const p = pages.get(currentSlug());
+  contentEl.innerHTML = "";
+  if (!p) {
+    renderHeader({ slug: "missing", title: "Page not found", icon: "🤷" });
+    const back = el("a", null, "Back to home");
+    back.href = "#/";
+    contentEl.append(back);
+    return;
+  }
+  renderHeader(p);
+
+  renderSections(sectionsOf(p));
+
+  const children = childrenOf(p.slug);
+  if (children.length) {
+    renderSections([{ title: p.childrenTitle ?? "Pages", layout: "tiles", items: children.map(pageItem) }]);
+  }
+}
+
+// One list per page with all its links, side by side in columns. Used for search
+// results and for the "all" view (every link, Homepage style).
+function linkGroups(keep = () => true) {
+  const groups = [];
+  for (const p of pages.values()) {
+    const kept = (s) => (s.links ?? []).filter((link) => keep(link, s));
+    if (p.slug === "home") {
+      // Home's sections keep their own names; a column titled after the site would repeat the page title.
+      for (const s of p.sections ?? []) {
+        const items = kept(s);
+        if (items.length) groups.push({ title: s.title, icon: s.icon, layout: "list", items });
+      }
+    } else {
+      const items = (p.sections ?? []).flatMap(kept);
+      if (items.length) groups.push({ title: p.title ?? p.slug, icon: p.icon, layout: "list", items });
+    }
+  }
+  return groups;
+}
+
+function renderSearch(q) {
+  contentEl.innerHTML = "";
+  const matches = (...fields) => fields.some((f) => f && String(f).toLowerCase().includes(q));
+  const sections = [];
+
+  const pageHits = [...pages.values()].filter((p) => matches(p.title, p.slug, p.description));
+  if (pageHits.length) sections.push({ title: "Pages", layout: "tiles", items: pageHits.map(pageItem) });
+  sections.push(...linkGroups((link, s) => matches(link.name, link.abbr, link.desc, link.url, s.title, ...(link.tags ?? []))));
+
+  if (sections.length) renderSections(sections);
+  else contentEl.append(el("p", "empty", "No bookmarks match. Press Enter to search the web."));
+}
+
+// The "all" view replaces the home page: every link from every page, one column per page.
+function renderAll() {
+  contentEl.innerHTML = "";
+  renderHeader(pages.get("home") ?? { slug: "home", title: SITE.title });
+  renderSections(linkGroups());
+}
+
+function render() {
+  const q = pref("search") === "inline" ? searchEl.value.trim().toLowerCase() : "";
+  if (q) renderSearch(q);
+  else if (pref("view") === "all" && currentSlug() === "home") renderAll();
+  else renderPage();
+}
+
+// ---- Toolbar: each button shows what clicking it switches to ----
+const ICONS = {
+  pages: "M3 11H11V3H3M5 5H9V9H5M13 21H21V13H13M15 15H19V19H15M3 21H11V13H3M5 15H9V19H5M13 3V11H21V3M19 9H15V5H19Z",
+  all: "M21 13H3A1 1 0 0 0 2 14V20A1 1 0 0 0 3 21H21A1 1 0 0 0 22 20V14A1 1 0 0 0 21 13M20 19H4V15H20M21 3H3A1 1 0 0 0 2 4V10A1 1 0 0 0 3 11H21A1 1 0 0 0 22 10V4A1 1 0 0 0 21 3M20 9H4V5H20Z",
+  popup: "M18 18V20H4A2 2 0 0 1 2 18V8H4V18M22 6V14A2 2 0 0 1 20 16H8A2 2 0 0 1 6 14V6A2 2 0 0 1 8 4H20A2 2 0 0 1 22 6M20 6H8V14H20Z",
+  inline: "M17,7H22V17H17V19A1,1 0 0,0 18,20H20V22H17.5C16.95,22 16,21.55 16,21C16,21.55 15.05,22 14.5,22H12V20H14A1,1 0 0,0 15,19V5A1,1 0 0,0 14,4H12V2H14.5C15.05,2 16,2.45 16,3C16,2.45 16.95,2 17.5,2H20V4H18A1,1 0 0,0 17,5V7M2,7H13V9H4V15H13V17H2V7M20,15V9H17V15H20Z",
+  light: "M12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,2L14.39,5.42C13.65,5.15 12.84,5 12,5C11.16,5 10.35,5.15 9.61,5.42L12,2M3.34,7L7.5,6.65C6.9,7.16 6.36,7.78 5.94,8.5C5.5,9.24 5.25,10 5.11,10.79L3.34,7M3.36,17L5.12,13.23C5.26,14 5.53,14.78 5.95,15.5C6.37,16.24 6.91,16.86 7.5,17.37L3.36,17M20.65,7L18.88,10.79C18.74,10 18.47,9.23 18.05,8.5C17.63,7.78 17.1,7.15 16.5,6.64L20.65,7M20.64,17L16.5,17.36C17.09,16.85 17.62,16.22 18.04,15.5C18.46,14.77 18.73,14 18.87,13.21L20.64,17M12,22L9.59,18.56C10.33,18.83 11.14,19 12,19C12.82,19 13.63,18.83 14.37,18.56L12,22Z",
+  dark: "M17.75,4.09L15.22,6.03L16.13,9.09L13.5,7.28L10.87,9.09L11.78,6.03L9.25,4.09L12.44,4L13.5,1L14.56,4L17.75,4.09M21.25,11L19.61,12.25L20.2,14.23L18.5,13.06L16.8,14.23L17.39,12.25L15.75,11L17.81,10.95L18.5,9L19.19,10.95L21.25,11M18.97,15.95C19.8,15.87 20.69,17.05 20.16,17.8C19.84,18.25 19.5,18.67 19.08,19.07C15.17,23 8.84,23 4.94,19.07C1.03,15.17 1.03,8.83 4.94,4.93C5.34,4.53 5.76,4.17 6.21,3.85C6.96,3.32 8.14,4.21 8.06,5.04C7.79,7.9 8.75,10.87 10.95,13.06C13.14,15.26 16.1,16.22 18.97,15.95M17.33,17.97C14.5,17.81 11.7,16.64 9.53,14.5C7.36,12.31 6.2,9.5 6.04,6.68C3.23,9.82 3.34,14.64 6.35,17.66C9.37,20.67 14.19,20.78 17.33,17.97Z",
+};
+
+function setTool(id, show, icon, label) {
+  const button = $(id);
+  button.hidden = !show;
+  button.title = label;
+  button.setAttribute("aria-label", label);
+  button.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${ICONS[icon]}"/></svg>`;
+}
+
+function updateToolbar() {
+  const all = pref("view") === "all";
+  setTool("view-toggle", SITE.viewToggle, all ? "pages" : "all", all ? "Show one page at a time" : "Show everything on one page");
+  const popup = pref("search") === "popup";
+  setTool("search-toggle", SITE.searchToggle, popup ? "inline" : "popup", popup ? "Search inside the page" : "Search in a popup");
+  const dark = isDark();
+  setTool("theme-toggle", SITE.themeToggle, dark ? "light" : "dark", dark ? "Switch to light mode" : "Switch to dark mode");
+
+  searchEl.readOnly = popup;
+  searchEl.placeholder = popup
+    ? "Search all bookmarks  ( / or just start typing )"
+    : "Search all bookmarks, or press Enter to search the web  ( / to focus )";
+}
+
+$("view-toggle").addEventListener("click", () => {
+  savePref("view", pref("view") === "all" ? "pages" : "all");
+  updateToolbar();
+  render();
+  window.scrollTo(0, 0);
+});
+$("search-toggle").addEventListener("click", () => {
+  savePref("search", pref("search") === "popup" ? "inline" : "popup");
+  closeLauncher();
+  searchEl.value = "";
+  updateToolbar();
+  render();
+});
+$("theme-toggle").addEventListener("click", () => {
+  savePref("theme", isDark() ? "light" : "dark");
+  applyTheme();
+  updateToolbar();
+});
+
+// ---- Quick-launch popup ----
+const launcherEl = $("launcher");
+const launcherInput = $("launcher-input");
+const launcherResults = $("launcher-results");
+let launcherItems = [];
+let launcherActive = 0;
+
+function searchEntries() {
+  const entries = [];
+  for (const p of pages.values()) {
+    const where = [...ancestorsOf(p).filter((a) => a.slug !== "home"), p].map((x) => x.title ?? x.slug).join(" › ");
+    if (p.slug !== "home") {
+      entries.push({ ...pageItem(p), where: "Page", hay: [p.title, p.slug, p.description] });
+    }
+    for (const s of p.sections ?? []) {
+      for (const link of s.links ?? []) {
+        entries.push({ ...link, where: s.title ? `${where} › ${s.title}` : where, hay: [link.name, link.abbr, link.desc, link.url, s.title, ...(link.tags ?? [])] });
+      }
+    }
+  }
+  return entries;
+}
+
+function updateLauncher() {
+  const q = launcherInput.value.trim().toLowerCase();
+  launcherItems = [];
+  if (q) {
+    const has = (f) => f != null && String(f).toLowerCase().includes(q);
+    const rank = (e) => (String(e.name).toLowerCase().startsWith(q) ? 0 : has(e.name) ? 1 : 2);
+    launcherItems = searchEntries()
+      .filter((e) => e.hay.some(has))
+      .sort((a, b) => rank(a) - rank(b))
+      .slice(0, 30);
+    launcherItems.push({ name: `Search the web for “${launcherInput.value.trim()}”`, icon: "🔎", href: SITE.searchUrl + encodeURIComponent(launcherInput.value.trim()), where: "" });
+  }
+  launcherActive = 0;
+  launcherResults.innerHTML = "";
+  launcherItems.forEach((item, i) => {
+    const li = itemEl(item);
+    const a = li.firstChild;
+    if (item.where) a.append(el("span", "where", item.where));
+    a.addEventListener("mousemove", () => setActive(i));
+    a.addEventListener("click", () => item.isPage && closeLauncher());
+    launcherResults.append(li);
+  });
+  setActive(0);
+}
+
+function setActive(i) {
+  const links = launcherResults.querySelectorAll("a");
+  if (!links.length) return;
+  launcherActive = (i + links.length) % links.length;
+  links.forEach((a, j) => a.classList.toggle("active", j === launcherActive));
+  links[launcherActive].scrollIntoView?.({ block: "nearest" });
+}
+
+function openLauncher(text = "") {
+  launcherEl.hidden = false;
+  launcherInput.value = text;
+  updateLauncher();
+  launcherInput.focus();
+}
+
+function closeLauncher() {
+  launcherEl.hidden = true;
+  launcherInput.value = "";
+  launcherResults.innerHTML = "";
+}
+
+launcherInput.addEventListener("input", updateLauncher);
+launcherInput.addEventListener("keydown", (e) => {
+  if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+    e.preventDefault();
+    setActive(launcherActive + (e.key === "ArrowDown" ? 1 : -1));
+  } else if (e.key === "Enter") {
+    const item = launcherItems[launcherActive];
+    if (!item) return;
+    const href = item.href ?? (isSafeUrl(item.url) ? item.url : null);
+    if (!href) return;
+    if (item.isPage) {
+      closeLauncher();
+      location.hash = href;
+    } else if (e.ctrlKey || e.metaKey || item.newTab) {
+      window.open(href, "_blank", "noopener");
+    } else {
+      location.href = href;
+    }
+  } else if (e.key === "Escape") {
+    closeLauncher();
+  }
+});
+launcherEl.addEventListener("mousedown", (e) => {
+  if (e.target === launcherEl) closeLauncher(); // click outside the box
+});
+
+// ---- Inline search ----
+searchEl.addEventListener("click", () => {
+  if (pref("search") === "popup") openLauncher();
+});
+searchEl.addEventListener("input", render);
+searchEl.addEventListener("keydown", (e) => {
+  if (pref("search") !== "inline") return;
+  const q = searchEl.value.trim();
+  if (e.key === "Enter" && q) {
+    const first = contentEl.querySelector("a");
+    if (first) {
+      first.click();
+      if (first.hash) { searchEl.value = ""; render(); }
+    } else {
+      location.href = SITE.searchUrl + encodeURIComponent(q);
+    }
+  } else if (e.key === "Escape") {
+    searchEl.value = "";
+    render();
+  }
+});
+document.addEventListener("keydown", (e) => {
+  if (!launcherEl.hidden || e.ctrlKey || e.metaKey || e.altKey) return;
+  const typingInField = e.target.closest?.("input, textarea, select, [contenteditable]") && !e.target.readOnly;
+  if (typingInField) return;
+  if (pref("search") === "popup") {
+    if (e.key === "/") {
+      e.preventDefault();
+      openLauncher();
+    } else if (e.key.length === 1 && /\S/.test(e.key)) {
+      e.preventDefault();
+      openLauncher(e.key); // start typing anywhere, like Homepage
+    } else if (e.key === "Enter" && e.target === searchEl) {
+      openLauncher();
+    }
+  } else if (e.key === "/") {
+    e.preventDefault();
+    searchEl.focus();
+  }
+});
+window.addEventListener("hashchange", () => {
+  searchEl.value = "";
+  closeLauncher();
+  render();
+  window.scrollTo(0, 0);
+});
+
+function tick() {
+  const now = new Date();
+  $("clock").textContent =
+    now.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" }) +
+    " · " + now.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+}
+
+async function loadYaml(file) {
+  const res = await fetch(file, { cache: "no-cache" });
+  if (!res.ok) throw new Error(`${file}: HTTP ${res.status}`);
+  try {
+    return jsyaml.load(await res.text()) ?? {};
+  } catch (e) {
+    throw new Error(`${file}: ${e.message}`); // includes the line number
+  }
+}
+
+async function loadSite() {
+  const [settings, bookmarks] = await Promise.all([loadYaml("settings.yaml"), loadYaml("bookmarks.yaml")]);
+  applySettings(settings);
+  for (const [slug, def] of Object.entries(bookmarks)) pages.set(slug, { ...def, slug });
+}
+
+function showError(title, detail) {
+  renderHeader({ slug: "error", title, icon: "⚠️" });
+  contentEl.innerHTML = "";
+  contentEl.append(el("pre", "error", detail));
+}
+
+(async () => {
+  tick();
+  setInterval(tick, 10_000);
+  try {
+    await loadSite();
+    updateToolbar();
+    render();
+    if (pref("search") === "inline") searchEl.focus();
+  } catch (e) {
+    // Browsers won't let a page opened from disk read other files.
+    if (location.protocol === "file:") {
+      showError(
+        "Run a local web server to preview",
+        "Browsers block reading settings.yaml and bookmarks.yaml from a page opened from disk.\n" +
+          "In this folder, run:\n\n    python3 -m http.server 8000\n\nthen open http://localhost:8000"
+      );
+    } else {
+      showError("Couldn't load the site", e.message);
+    }
+  } finally {
+    document.documentElement.classList.remove("loading");
+  }
+})();
+</script>
+</body>
+</html>

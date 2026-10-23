@@ -1,0 +1,136 @@
+# Bookmarks. Anyone can edit this file; no code changes needed.
+#
+# Each top-level key is a page. Its key is the page's address (home -> #/, corp -> #/corp).
+# "home" is the start page. Every other page shows up on "home" unless it sets
+# `parent:` to another page, which nests it there.
+#
+# page-key:
+#   title: Page name
+#   icon: mdi-domain            # optional: an emoji or a file in icons/ (see README)
+#   description: Subtitle       # optional
+#   parent: home                # optional: the page this one appears under
+#   sections:
+#     - title: Section name
+#       icon: mdi-bank          # optional
+#       layout: tiles           # optional: "tiles" = app grid; leave out for a list
+#       links:
+#         - name: GitHub
+#           url: https://github.com
+#           icon: github.svg    # optional: file in icons/ or icons/default/
+#           abbr: GH            # optional: text shown when there's no icon
+#           desc: Code          # optional: shown under the name
+#
+# Indent with spaces (not tabs). If a value contains ": " or " #", put it in quotes.
+
+# --- Sample bookmarks: replace with your own. ---
+
+home:
+  title: Home
+  childrenTitle: Teams
+  sections:
+    - title: Apps
+      layout: tiles
+      links:
+        - name: Gmail
+          url: https://mail.google.com
+        - name: Calendar
+          url: https://calendar.google.com
+          icon: google-calendar
+        - name: Drive
+          url: https://drive.google.com
+          icon: google-drive
+        - name: Slack
+          url: https://app.slack.com
+        - name: Zoom
+          url: https://zoom.us
+        - name: GitHub
+          url: https://github.com
+        - name: Notion
+          url: https://www.notion.so
+        - name: Figma
+          url: https://www.figma.com
+    - title: Company
+      icon: mdi-book-open-variant
+      links:
+        - name: Handbook
+          url: https://example.com/handbook
+          icon: mdi-book-open-variant
+          desc: Policies and how we work
+        - name: IT Help
+          url: https://example.com/it
+          icon: mdi-help-circle
+          tags: [support, laptop, password]
+    - title: People
+      icon: mdi-account-group
+      links:
+        - name: Org chart
+          url: https://example.com/org
+          icon: mdi-account-group
+        - name: Time off
+          url: https://example.com/pto
+          icon: mdi-calendar
+          tags: [vacation, pto, leave]
+
+engineering:
+  title: Engineering
+  icon: mdi-code-tags
+  description: Tools, dashboards and docs.
+  sections:
+    - title: Tools
+      layout: tiles
+      links:
+        - name: GitHub
+          url: https://github.com
+        - name: Cloudflare
+          url: https://dash.cloudflare.com
+        - name: AWS Console
+          url: https://console.aws.amazon.com
+          icon: aws
+        - name: Datadog
+          url: https://app.datadoghq.com
+        - name: Sentry
+          url: https://sentry.io
+    - title: Docs
+      icon: mdi-file-document-outline
+      links:
+        - name: Engineering wiki
+          url: https://example.com/wiki
+          icon: mdi-book-open-variant
+        - name: On-call runbooks
+          url: https://example.com/runbooks
+          icon: mdi-file-document-outline
+          tags: [incident, pager]
+
+platform:
+  title: Platform
+  icon: mdi-server
+  parent: engineering
+  sections:
+    - title: Infra
+      links:
+        - name: Terraform Cloud
+          url: https://app.terraform.io
+          icon: terraform
+        - name: Grafana
+          url: https://grafana.com
+
+marketing:
+  title: Marketing
+  icon: mdi-bullhorn
+  sections:
+    - title: Apps
+      layout: tiles
+      links:
+        - name: HubSpot
+          url: https://app.hubspot.com
+        - name: Canva
+          url: https://www.canva.com
+          icon: si-canva
+        - name: Google Analytics
+          url: https://analytics.google.com
+    - title: Brand
+      icon: mdi-folder
+      links:
+        - name: Brand guidelines
+          url: https://example.com/brand
+          icon: mdi-folder

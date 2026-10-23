@@ -1,0 +1,6 @@
+# Response headers for Cloudflare Pages and Netlify (both read this file).
+# The content rules are in a <meta> tag in index.html so they apply on every host.
+/*
+  Content-Security-Policy: frame-ancestors 'none'
+  Referrer-Policy: no-referrer
+  X-Content-Type-Options: nosniff
