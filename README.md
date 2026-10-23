@@ -64,7 +64,7 @@ bookmarks.yaml
 - Indent with 2 spaces. Put a value in quotes if it contains ": " or " #".
 
 settings.yaml (only include settings I ask for)
-- title, size (small | medium | large), view (pages | all), search (popup | inline),
+- title, size (small | medium | large), view (pages | all),
   theme (light | dark | auto), color and accent (slate, gray, zinc, neutral, stone, red, orange,
   amber, emerald, teal, sky, blue, indigo, violet, purple, rose).
 
@@ -183,12 +183,11 @@ To add an icon, save the file into `icons/` and use its file name. Sources (the 
 
 ### Views and buttons
 
-Three buttons in the top-right corner let each visitor switch modes. Their choices are remembered in their own browser; `settings.yaml` sets the starting mode, and `<name>Toggle: false` hides a button.
+Two buttons in the top-right corner let each visitor switch modes. Their choices are remembered in their own browser; `settings.yaml` sets the starting mode, and `<name>Toggle: false` hides a button.
 
 | Setting | Options | Button |
 |---|---|---|
 | `view` | `pages`: one page at a time, team pages as tiles (Okta style)<br>`all`: the home screen lists every link from every page, one column per page (Homepage style); team pages still open on their own | grid / rows |
-| `search` | `popup`: press `/` or just start typing; a quick-launch box lists matches from every page. ↑↓ to move, Enter to open, Ctrl+Enter for a new tab, Esc to close (Homepage style)<br>`inline`: the search box filters the page as you type | popup / text box |
 | `theme` | `light`, `dark`, `auto` (follow the device) | sun / moon |
 
 ## Test locally

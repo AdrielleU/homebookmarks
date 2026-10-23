@@ -137,8 +137,8 @@
   .tiles a.page { border: 1px dashed var(--muted); background: transparent; }
   .tiles a.page:hover { background: var(--card); }
 
-  /* Search box as a launcher button in popup mode */
-  #search[readonly] { cursor: pointer; }
+  /* The search box opens the quick-launch popup */
+  #search { cursor: pointer; }
 
   /* Quick-launch popup (Homepage style) */
   #launcher {
@@ -194,14 +194,13 @@
       <span id="clock"></span>
       <div class="tools">
         <button id="view-toggle" class="tool" type="button" hidden></button>
-        <button id="search-toggle" class="tool" type="button" hidden></button>
         <button id="theme-toggle" class="tool" type="button" hidden></button>
       </div>
     </div>
   </div>
   <h1 id="title"></h1>
   <p id="desc"></p>
-  <input id="search" type="search" autocomplete="off">
+  <input id="search" type="search" autocomplete="off" readonly placeholder="Search all bookmarks  ( / or just start typing )">
   <div id="content"></div>
 </main>
 
@@ -374,37 +373,23 @@ function renderPage() {
   }
 }
 
-// One list per page with all its links, side by side in columns. Used for search
-// results and for the "all" view (every link, Homepage style).
-function linkGroups(keep = () => true) {
+// One list per page with all its links, side by side in columns, for the "all" view
+// (every link, Homepage style).
+function linkGroups() {
   const groups = [];
   for (const p of pages.values()) {
-    const kept = (s) => (s.links ?? []).filter((link) => keep(link, s));
     if (p.slug === "home") {
       // Home's sections keep their own names; a column titled after the site would repeat the page title.
       for (const s of p.sections ?? []) {
-        const items = kept(s);
+        const items = s.links ?? [];
         if (items.length) groups.push({ title: s.title, icon: s.icon, layout: "list", items });
       }
     } else {
-      const items = (p.sections ?? []).flatMap(kept);
+      const items = (p.sections ?? []).flatMap((s) => s.links ?? []);
       if (items.length) groups.push({ title: p.title ?? p.slug, icon: p.icon, layout: "list", items });
     }
   }
   return groups;
-}
-
-function renderSearch(q) {
-  contentEl.innerHTML = "";
-  const matches = (...fields) => fields.some((f) => f && String(f).toLowerCase().includes(q));
-  const sections = [];
-
-  const pageHits = [...pages.values()].filter((p) => matches(p.title, p.slug, p.description));
-  if (pageHits.length) sections.push({ title: "Pages", layout: "tiles", items: pageHits.map(pageItem) });
-  sections.push(...linkGroups((link, s) => matches(link.name, link.abbr, link.desc, link.url, s.title, ...(link.tags ?? []))));
-
-  if (sections.length) renderSections(sections);
-  else contentEl.append(el("p", "empty", "No bookmarks match. Press Enter to search the web."));
 }
 
 // The "all" view replaces the home page: every link from every page, one column per page.
@@ -415,9 +400,7 @@ function renderAll() {
 }
 
 function render() {
-  const q = pref("search") === "inline" ? searchEl.value.trim().toLowerCase() : "";
-  if (q) renderSearch(q);
-  else if (pref("view") === "all" && currentSlug() === "home") renderAll();
+  if (pref("view") === "all" && currentSlug() === "home") renderAll();
   else renderPage();
 }
 
@@ -425,8 +408,6 @@ function render() {
 const ICONS = {
   pages: "M3 11H11V3H3M5 5H9V9H5M13 21H21V13H13M15 15H19V19H15M3 21H11V13H3M5 15H9V19H5M13 3V11H21V3M19 9H15V5H19Z",
   all: "M21 13H3A1 1 0 0 0 2 14V20A1 1 0 0 0 3 21H21A1 1 0 0 0 22 20V14A1 1 0 0 0 21 13M20 19H4V15H20M21 3H3A1 1 0 0 0 2 4V10A1 1 0 0 0 3 11H21A1 1 0 0 0 22 10V4A1 1 0 0 0 21 3M20 9H4V5H20Z",
-  popup: "M18 18V20H4A2 2 0 0 1 2 18V8H4V18M22 6V14A2 2 0 0 1 20 16H8A2 2 0 0 1 6 14V6A2 2 0 0 1 8 4H20A2 2 0 0 1 22 6M20 6H8V14H20Z",
-  inline: "M17,7H22V17H17V19A1,1 0 0,0 18,20H20V22H17.5C16.95,22 16,21.55 16,21C16,21.55 15.05,22 14.5,22H12V20H14A1,1 0 0,0 15,19V5A1,1 0 0,0 14,4H12V2H14.5C15.05,2 16,2.45 16,3C16,2.45 16.95,2 17.5,2H20V4H18A1,1 0 0,0 17,5V7M2,7H13V9H4V15H13V17H2V7M20,15V9H17V15H20Z",
   light: "M12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,2L14.39,5.42C13.65,5.15 12.84,5 12,5C11.16,5 10.35,5.15 9.61,5.42L12,2M3.34,7L7.5,6.65C6.9,7.16 6.36,7.78 5.94,8.5C5.5,9.24 5.25,10 5.11,10.79L3.34,7M3.36,17L5.12,13.23C5.26,14 5.53,14.78 5.95,15.5C6.37,16.24 6.91,16.86 7.5,17.37L3.36,17M20.65,7L18.88,10.79C18.74,10 18.47,9.23 18.05,8.5C17.63,7.78 17.1,7.15 16.5,6.64L20.65,7M20.64,17L16.5,17.36C17.09,16.85 17.62,16.22 18.04,15.5C18.46,14.77 18.73,14 18.87,13.21L20.64,17M12,22L9.59,18.56C10.33,18.83 11.14,19 12,19C12.82,19 13.63,18.83 14.37,18.56L12,22Z",
   dark: "M17.75,4.09L15.22,6.03L16.13,9.09L13.5,7.28L10.87,9.09L11.78,6.03L9.25,4.09L12.44,4L13.5,1L14.56,4L17.75,4.09M21.25,11L19.61,12.25L20.2,14.23L18.5,13.06L16.8,14.23L17.39,12.25L15.75,11L17.81,10.95L18.5,9L19.19,10.95L21.25,11M18.97,15.95C19.8,15.87 20.69,17.05 20.16,17.8C19.84,18.25 19.5,18.67 19.08,19.07C15.17,23 8.84,23 4.94,19.07C1.03,15.17 1.03,8.83 4.94,4.93C5.34,4.53 5.76,4.17 6.21,3.85C6.96,3.32 8.14,4.21 8.06,5.04C7.79,7.9 8.75,10.87 10.95,13.06C13.14,15.26 16.1,16.22 18.97,15.95M17.33,17.97C14.5,17.81 11.7,16.64 9.53,14.5C7.36,12.31 6.2,9.5 6.04,6.68C3.23,9.82 3.34,14.64 6.35,17.66C9.37,20.67 14.19,20.78 17.33,17.97Z",
 };
@@ -442,15 +423,8 @@ function setTool(id, show, icon, label) {
 function updateToolbar() {
   const all = pref("view") === "all";
   setTool("view-toggle", SITE.viewToggle, all ? "pages" : "all", all ? "Show one page at a time" : "Show everything on one page");
-  const popup = pref("search") === "popup";
-  setTool("search-toggle", SITE.searchToggle, popup ? "inline" : "popup", popup ? "Search inside the page" : "Search in a popup");
   const dark = isDark();
   setTool("theme-toggle", SITE.themeToggle, dark ? "light" : "dark", dark ? "Switch to light mode" : "Switch to dark mode");
-
-  searchEl.readOnly = popup;
-  searchEl.placeholder = popup
-    ? "Search all bookmarks  ( / or just start typing )"
-    : "Search all bookmarks, or press Enter to search the web  ( / to focus )";
 }
 
 $("view-toggle").addEventListener("click", () => {
@@ -458,13 +432,6 @@ $("view-toggle").addEventListener("click", () => {
   updateToolbar();
   render();
   window.scrollTo(0, 0);
-});
-$("search-toggle").addEventListener("click", () => {
-  savePref("search", pref("search") === "popup" ? "inline" : "popup");
-  closeLauncher();
-  searchEl.value = "";
-  updateToolbar();
-  render();
 });
 $("theme-toggle").addEventListener("click", () => {
   savePref("theme", isDark() ? "light" : "dark");
@@ -567,48 +534,23 @@ launcherEl.addEventListener("mousedown", (e) => {
   if (e.target === launcherEl) closeLauncher(); // click outside the box
 });
 
-// ---- Inline search ----
-searchEl.addEventListener("click", () => {
-  if (pref("search") === "popup") openLauncher();
-});
-searchEl.addEventListener("input", render);
-searchEl.addEventListener("keydown", (e) => {
-  if (pref("search") !== "inline") return;
-  const q = searchEl.value.trim();
-  if (e.key === "Enter" && q) {
-    const first = contentEl.querySelector("a");
-    if (first) {
-      first.click();
-      if (first.hash) { searchEl.value = ""; render(); }
-    } else {
-      location.href = SITE.searchUrl + encodeURIComponent(q);
-    }
-  } else if (e.key === "Escape") {
-    searchEl.value = "";
-    render();
-  }
-});
+// ---- Opening the popup: click the search box, press /, or just start typing ----
+searchEl.addEventListener("click", () => openLauncher());
 document.addEventListener("keydown", (e) => {
   if (!launcherEl.hidden || e.ctrlKey || e.metaKey || e.altKey) return;
   const typingInField = e.target.closest?.("input, textarea, select, [contenteditable]") && !e.target.readOnly;
   if (typingInField) return;
-  if (pref("search") === "popup") {
-    if (e.key === "/") {
-      e.preventDefault();
-      openLauncher();
-    } else if (e.key.length === 1 && /\S/.test(e.key)) {
-      e.preventDefault();
-      openLauncher(e.key); // start typing anywhere, like Homepage
-    } else if (e.key === "Enter" && e.target === searchEl) {
-      openLauncher();
-    }
-  } else if (e.key === "/") {
+  if (e.key === "/") {
     e.preventDefault();
-    searchEl.focus();
+    openLauncher();
+  } else if (e.key.length === 1 && /\S/.test(e.key)) {
+    e.preventDefault();
+    openLauncher(e.key); // start typing anywhere, like Homepage
+  } else if (e.key === "Enter" && e.target === searchEl) {
+    openLauncher();
   }
 });
 window.addEventListener("hashchange", () => {
-  searchEl.value = "";
   closeLauncher();
   render();
   window.scrollTo(0, 0);
@@ -650,7 +592,6 @@ function showError(title, detail) {
     await loadSite();
     updateToolbar();
     render();
-    if (pref("search") === "inline") searchEl.focus();
   } catch (e) {
     // Browsers won't let a page opened from disk read other files.
     if (location.protocol === "file:") {

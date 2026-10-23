@@ -9,8 +9,6 @@ searchUrl: https://www.google.com/search?q=
 size: medium       # small, medium, or large (or a number: base text size in px)
 view: pages        # pages (one page at a time) or all (every link on the home screen, one column per page)
 viewToggle: true   # show the pages/all button
-search: popup      # popup (Homepage-style quick launch: press / or just start typing) or inline (filter the page)
-searchToggle: true # show the popup/inline button
 
 theme: light       # starting mode: light, dark, or auto (follow the visitor's device)
 themeToggle: true  # show the light/dark button; each visitor's choice is remembered in their browser
