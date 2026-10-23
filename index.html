@@ -77,7 +77,7 @@
     border-radius: 14px;
     background: var(--bg);
     box-shadow: 0 20px 50px rgb(0 0 0 / .35);
-    display: grid; gap: .5rem;
+    display: grid; grid-template-columns: minmax(0, 1fr); gap: .5rem;
   }
   #prefs[hidden] { display: none; }
   #prefs h3 { margin: .375rem 0 0; font-size: .75rem; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
@@ -97,22 +97,23 @@
     background: var(--card) center / cover; color: var(--muted); font: inherit; font-size: .7rem; cursor: pointer;
   }
   .bg-grid button[aria-pressed="true"] { border-color: var(--accent); }
-  .swatches { display: flex; flex-wrap: wrap; gap: .375rem; align-items: center; }
-  .swatches button {
-    width: 1.5rem; height: 1.5rem; padding: 0;
-    border: 2px solid transparent; border-radius: 50%;
-    box-shadow: inset 0 0 0 2px var(--bg); cursor: pointer;
-  }
-  .swatches button[aria-pressed="true"] { border-color: var(--text); }
-  .custom-color { display: flex; gap: .375rem; align-items: center; width: 100%; margin-top: .125rem; }
-  .custom-color input[type="color"] { width: 2rem; height: 1.75rem; padding: 0; border: 0; border-radius: 6px; background: none; cursor: pointer; }
-  .custom-color input[type="text"] {
+  .custom-color, .seed-row { display: flex; gap: .375rem; align-items: center; }
+  .custom-color input[type="color"] { width: 3rem; height: 2rem; padding: 0; border: 0; border-radius: 6px; background: none; cursor: pointer; }
+  .custom-color input[type="text"], .seed-row input {
     flex: 1; min-width: 0; padding: .3rem .5rem;
     border: 1px solid var(--card-hover); border-radius: 6px;
     background: var(--card); color: var(--text); font: inherit; font-size: .85rem; font-family: ui-monospace, monospace;
   }
-  .custom-color input[type="text"]:focus { border-color: var(--accent); outline: none; }
-  .custom-color input[aria-invalid="true"] { border-color: #ef4444; }
+  .custom-color input[type="text"]:focus, .seed-row input:focus { border-color: var(--accent); outline: none; }
+  .custom-color input[aria-invalid="true"], .seed-row input[aria-invalid="true"] { border-color: #ef4444; }
+  .seed-row button {
+    padding: .3rem .6rem;
+    border: 1px solid var(--card-hover); border-radius: 6px;
+    background: var(--card); color: var(--text); font: inherit; font-size: .8rem; cursor: pointer; white-space: nowrap;
+  }
+  .seed-row button:hover { background: var(--card-hover); }
+  .seed-note { margin: 0; font-size: .75rem; color: var(--muted); }
+  .seed-note:empty { display: none; }
   #prefs-reset {
     margin-top: .375rem; padding: .45rem;
     border: 1px solid var(--card-hover); border-radius: 8px;
@@ -255,9 +256,16 @@
           <h3>Background</h3>
           <div id="prefs-bg" class="bg-grid"></div>
           <h3>Primary color</h3>
-          <div id="prefs-accent" class="swatches"></div>
+          <div id="prefs-accent" class="custom-color"></div>
           <h3>Secondary color</h3>
-          <div id="prefs-color" class="swatches"></div>
+          <div id="prefs-color" class="custom-color"></div>
+          <h3>Seed</h3>
+          <div class="seed-row">
+            <input id="seed" type="text" inputmode="numeric" autocomplete="off" spellcheck="false" aria-label="Seed: copy yours, or paste one and press Load">
+            <button id="seed-copy" type="button">Copy</button>
+            <button id="seed-load" type="button">Load</button>
+          </div>
+          <p id="seed-note" class="seed-note"></p>
           <button id="prefs-reset" type="button">Reset to site defaults</button>
         </div>
       </div>
@@ -496,6 +504,7 @@ function updateToolbar() {
 
 $("view-toggle").addEventListener("click", () => {
   savePref("view", pref("view") === "all" ? "pages" : "all");
+  if (!prefsEl.hidden) showSeed();
   updateToolbar();
   render();
   window.scrollTo(0, 0);
@@ -516,46 +525,73 @@ function choice(button, name, value) {
   return button;
 }
 
-// One row of color swatches plus a picker and a hex field for any other color.
-function colorRow(container, name) {
-  container.innerHTML = "";
-  for (const [color, shades] of Object.entries(PALETTES)) {
-    const b = choice(el("button"), name, color);
-    b.style.background = shades[4];
-    b.title = b.ariaLabel = color;
-    container.append(b);
-  }
-  const current = pref(name);
-  const hex = isHex(current) ? current : (shadesOf(current) ?? PALETTES.slate)[4];
-  const row = el("div", "custom-color");
+// A color picker plus a hex field; either one saves the color as you go.
+function colorRow(row, name) {
+  row.innerHTML = "";
+  const hex = hexOf(pref(name));
   const picker = el("input");
   picker.type = "color";
   picker.value = hex;
   picker.title = picker.ariaLabel = "Pick any color";
   const typed = el("input");
   typed.type = "text";
-  typed.value = isHex(current) ? current : "";
-  typed.placeholder = "#hex, e.g. " + hex;
+  typed.value = hex;
+  typed.placeholder = "#hex";
   typed.spellcheck = false;
   typed.ariaLabel = "Type a hex color";
   const use = (value) => {
     savePref(name, value.toLowerCase());
     applyTheme();
+    showSeed();
   };
   picker.addEventListener("input", () => { typed.value = picker.value; typed.removeAttribute("aria-invalid"); use(picker.value); });
-  picker.addEventListener("change", buildPrefs);
   typed.addEventListener("input", () => {
     const v = typed.value.trim().replace(/^#?/, "#");
     const ok = isHex(v);
     typed.setAttribute("aria-invalid", String(!ok && typed.value.trim() !== ""));
     if (ok) { picker.value = v; use(v); }
   });
-  typed.addEventListener("change", () => { if (isHex(typed.value.trim().replace(/^#?/, "#"))) buildPrefs(); });
   row.append(picker, typed);
-  container.append(row);
 }
 
-function buildPrefs() {
+// ---- Seed: the visitor's whole look as a number ----
+const seedEl = $("seed");
+const seedNote = $("seed-note");
+
+function showSeed(note = "") {
+  seedEl.value = makeSeed();
+  seedEl.removeAttribute("aria-invalid");
+  seedNote.textContent = note;
+}
+
+function useSeed(seed) {
+  if (!loadSeed(seed)) {
+    seedEl.setAttribute("aria-invalid", "true");
+    seedNote.textContent = "That isn't a valid seed. Check that every digit was copied.";
+    return;
+  }
+  applyTheme();
+  updateToolbar();
+  render();
+  buildPrefs("Loaded.");
+}
+
+$("seed-load").addEventListener("click", () => useSeed(seedEl.value));
+seedEl.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") useSeed(seedEl.value);
+});
+$("seed-copy").addEventListener("click", async () => {
+  showSeed();
+  try {
+    await navigator.clipboard.writeText(seedEl.value);
+    seedNote.textContent = "Copied. Anyone can paste it here to get this exact look, or open this page with ?seed=" + seedEl.value;
+  } catch {
+    seedEl.select();
+    seedNote.textContent = "Press Ctrl+C (Cmd+C) to copy.";
+  }
+});
+
+function buildPrefs(note) {
   const theme = $("prefs-theme");
   theme.innerHTML = "";
   for (const [mode, label] of [["light", "Light"], ["dark", "Dark"], ["auto", "Auto"]]) {
@@ -583,6 +619,7 @@ function buildPrefs() {
 
   colorRow($("prefs-accent"), "accent");
   colorRow($("prefs-color"), "color");
+  showSeed(note);
 }
 
 function setPrefsOpen(open) {
@@ -756,6 +793,12 @@ function showError(title, detail) {
   setInterval(tick, 10_000);
   try {
     await loadSite();
+    // A shared link like ?seed=123… loads that look, then the address goes back to normal.
+    const linked = new URLSearchParams(location.search).get("seed");
+    if (linked != null) {
+      if (SITE.customize && loadSeed(linked)) applyTheme();
+      history.replaceState(null, "", location.pathname + location.hash);
+    }
     updateToolbar();
     render();
   } catch (e) {
