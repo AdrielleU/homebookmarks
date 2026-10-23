@@ -112,7 +112,7 @@
   #colors summary::after { content: "▾"; font-size: .9rem; transition: transform .15s; }
   #colors[open] summary::after { transform: rotate(180deg); }
   #colors summary:hover { color: var(--text); }
-  #colors .seed-note { margin: .5rem 0 .25rem; }
+  #color-list { margin-top: .5rem; }
   #color-list { display: grid; gap: .625rem; }
   .color-label { display: flex; align-items: baseline; gap: .5rem; margin-bottom: .25rem; }
   .color-name { font-size: .85rem; font-weight: 600; }
@@ -272,11 +272,11 @@
         <div id="prefs" role="dialog" aria-label="Appearance" hidden>
           <h3>Mode</h3>
           <div id="prefs-theme" class="seg"></div>
+          <p id="color-mode" class="seed-note"></p>
           <h3>Background</h3>
           <div id="prefs-bg" class="bg-grid"></div>
           <details id="colors">
             <summary>Colors</summary>
-            <p id="color-mode" class="seed-note"></p>
             <div id="color-list"></div>
           </details>
           <h3>Seed</h3>
@@ -617,7 +617,7 @@ function buildColors() {
   list.innerHTML = "";
   for (const row of COLOR_ROWS) list.append(colorRow(row));
   const mode = modeEditing();
-  $("color-mode").textContent = `For ${mode} mode. Switch to ${mode === "dark" ? "light" : "dark"} mode to set its own colors.`;
+  $("color-mode").textContent = `The background and colors below are for ${mode} mode. Switch to ${mode === "dark" ? "light" : "dark"} mode to set its own.`;
 }
 
 // ---- Seed: the visitor's whole look as a number ----
@@ -668,15 +668,24 @@ function buildPrefs(note) {
   }
 
   // The site's own image first (if it has one), then plain color, then the bundled photos.
+  // Each mode keeps its own background.
+  const mode = modeEditing();
   const bgs = $("prefs-bg");
   bgs.innerHTML = "";
-  const own = SITE.background.image;
+  const own = siteBackground(mode);
   const options = [];
   if (own && !BACKGROUNDS.some((n) => own === `backgrounds/${n}.jpg`)) options.push({ value: own, thumb: own, label: "Site default" });
   options.push({ value: "", label: "None" });
   for (const n of BACKGROUNDS) options.push({ value: `backgrounds/${n}.jpg`, thumb: `backgrounds/thumbs/${n}.jpg`, label: n.replace(/-/g, " ") });
   for (const o of options) {
-    const b = choice(el("button"), "background", o.value);
+    const b = el("button");
+    b.type = "button";
+    b.setAttribute("aria-pressed", String(backgroundFor(mode) === o.value));
+    b.addEventListener("click", () => {
+      savePref(`${mode}.background`, o.value);
+      applyTheme();
+      buildPrefs();
+    });
     b.title = b.ariaLabel = o.label;
     if (o.thumb) b.style.backgroundImage = `url("${encodeURI(o.thumb)}")`;
     else b.textContent = o.label;

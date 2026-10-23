@@ -21,7 +21,11 @@ background:
   # A local image: one from backgrounds/ (alps-clouds, beach, desert-stars, earth-night,
   # forest, gradient-ocean, gradient-rainbow, highlands, misty-hills, mountain-valley,
   # night-sky, red-mountains, starry-peaks, yosemite), e.g. backgrounds/forest.jpg,
-  # or your own file such as background.jpg. "" = plain color.
+  # or your own file such as background.jpg. "" = plain color. For a different image in
+  # each mode, give two:
+  #   image:
+  #     light: backgrounds/beach.jpg
+  #     dark: backgrounds/night-sky.jpg
   image: ""
   blur: 0          # px
   brightness: 0.7  # 0–1; lower = easier to read: dims the image in dark mode, fades it in light mode
