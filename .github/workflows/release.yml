@@ -2,7 +2,7 @@
 #   - build the Docker image for amd64 and arm64
 #   - publish it as ghcr.io/<owner>/<repo>:1.2.3, :1.2, :1 and :latest
 #   - create a GitHub Release with auto-generated notes
-name: Release
+name: Release image
 
 on:
   push:

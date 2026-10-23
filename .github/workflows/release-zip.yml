@@ -1,0 +1,49 @@
+# Release a site as a .zip of its files. Tags name the site: <site>-v<version>,
+# e.g. citadel-v1.2.3. Either push the tag from the site's branch:
+#   git tag citadel-v1.2.3 && git push origin citadel-v1.2.3
+# or on github.com: Releases -> Draft a new release -> new tag citadel-v1.2.3,
+# target = the site's branch -> Publish release.
+# Either way, homebookmarks-citadel-v1.2.3.zip is attached to the release, ready
+# to unzip and upload to any static host, or run with docker compose.
+# (Plain v1.2.3 tags are the template's Docker image releases; see release.yml.)
+name: Release zip
+
+on:
+  push:
+    tags: ["*-v*"]
+  release:
+    types: [published]
+
+permissions:
+  contents: write   # create the release and upload the zip
+
+concurrency:
+  group: release-zip-${{ github.ref_name }}
+
+jobs:
+  zip:
+    if: contains(github.ref_name, '-v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build zip
+        run: |
+          site="${GITHUB_REF_NAME%-v*}"
+          zip="homebookmarks-${GITHUB_REF_NAME}.zip"
+          # git archive leaves out .git and anything marked export-ignore in .gitattributes.
+          git archive --format=zip --prefix="homebookmarks-${site}/" -o "$zip" HEAD
+          echo "SITE=$site" >> "$GITHUB_ENV"
+          echo "ZIP=$zip" >> "$GITHUB_ENV"
+
+      - name: Create the release or add the zip to it
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" "$ZIP" --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" "$ZIP" \
+              --title "$SITE ${GITHUB_REF_NAME##*-}" \
+              --notes "The **$SITE** site at ${GITHUB_SHA::7}. Download \`$ZIP\`, unzip it, then upload the folder to a static host or run \`docker compose up -d\` inside it."
+          fi

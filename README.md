@@ -47,7 +47,7 @@ A `.env` file only works when something reads it: a build step or a server. This
 
 ## Fill it in with AI (copy this prompt)
 
-Don't want to write YAML by hand? Paste this prompt into an AI assistant (Claude, ChatGPT, …), replace the two `<…>` parts at the bottom, and it gives you `bookmarks.yaml` and `settings.yaml`.
+Don't want to write YAML by hand? Paste this prompt into an AI assistant (Claude, ChatGPT, …) and fill in the three `<…>` parts at the bottom. It gives you `bookmarks.yaml` and `settings.yaml`, plus step-by-step instructions for publishing them the way you work: clicking through a website, or typing commands in a terminal.
 
 Your links can be a plain list, a browser bookmarks export (Chrome/Edge: Bookmarks manager → ⋮ → **Export bookmarks**; Firefox: Bookmarks → Manage → **Import and Backup** → Export to HTML), or a Homepage `bookmarks.yaml`.
 
@@ -68,15 +68,39 @@ settings.yaml (only include settings I ask for)
   theme (light | dark | auto), color and accent (slate, gray, zinc, neutral, stone, red, orange,
   amber, emerald, teal, sky, blue, indigo, violet, purple, rose).
 
-Reply with only the two files, each in its own code block.
+Then give me short numbered steps to publish the files, written for how I said I'll publish (below).
+Facts about this template, for those steps:
+- It's plain static files with no build step. The site folder (its root) is what gets published.
+  Only bookmarks.yaml, settings.yaml and icons/ change per site; leave index.html and lib/ alone.
+- Preview locally: `python3 -m http.server 8000`, then open http://localhost:8000
+  (double-clicking index.html doesn't work; browsers block it from reading the YAML files).
+- Website only, with GitHub: open the file on github.com → pencil icon → paste → Commit changes.
+  Icons: open icons/ → Add file → Upload files. A host connected to the repo redeploys on each commit.
+- Website only, without GitHub: download the site's latest release .zip (or the template's
+  Code → Download ZIP), unzip, replace the two YAML files, then upload the folder:
+  Cloudflare: Workers & Pages → Create → Pages → Upload assets.  Netlify: app.netlify.com/drop.
+  Firebase Hosting has no upload page; it needs the terminal once (`firebase deploy --only hosting`).
+  GitHub Pages: Settings → Pages → Deploy from a branch → main, / (root).
+- Terminal: git add / commit / push (if a host is connected to the repo), or
+  `npx wrangler pages deploy . --project-name <name>`, `npx netlify-cli deploy --dir . --prod`,
+  `firebase deploy --only hosting`, or `docker compose up -d` to self-host (http://localhost:8080).
+- Releases: tag `<site>-v<version>` (e.g. sales-v1.0.0) and a .zip of the site is attached to a GitHub
+  Release. Terminal: `git tag sales-v1.0.0 && git push origin sales-v1.0.0`. Website: Releases →
+  Draft a new release → type the new tag → pick the site's branch → Publish release.
+- Never put passwords, API keys or tokens in these files; everything in them is public on the site.
+Don't suggest anything that needs a build step, a server-side script, or environment variables.
+
+Reply with the two files, each in its own code block, then the steps.
 
 About my site: <e.g. "Sales team start page, blue, light mode, everything on one screen">
+
+How I'll publish: <"website only" or "terminal">, on <Cloudflare Pages / Netlify / Firebase / GitHub Pages / Docker on my server / not sure yet>
 
 My links:
 <paste your links, bookmarks export, or Homepage bookmarks.yaml here>
 ````
 
-Check the result, then put the files in your site, either way:
+Check the result, then follow the steps it gives you. For reference, the two ways to put the files in your site:
 
 **On a website (no tools needed):**
 
@@ -291,7 +315,7 @@ services:
 
 Single-file mounts can miss edits from editors that save by replacing the file; run `docker compose restart` if a change doesn't show.
 
-**Making a release** (maintainers): `git tag v1.2.3 && git push origin v1.2.3`. GitHub Actions builds the image for amd64 and arm64, pushes it, and creates the release.
+New image versions come from template releases; see [Releases](#releases).
 
 **Web UI:** in Portainer (or similar), **Stacks** → **Add stack** → **Repository**, point it at your site's git repo with compose path `docker-compose.yml` → **Deploy the stack**.
 
@@ -308,6 +332,37 @@ All of these publish the site to anyone with the address. To require a login:
 - **Cloudflare Pages:** put Cloudflare Access in front of it (Zero Trust → Access → Applications). Free for small teams; works with Google, Okta, GitHub sign-in.
 - **Netlify:** password protection is on paid plans.
 - **Firebase / GitHub Pages:** no built-in login for static sites. Use Cloudflare Pages if you need one.
+
+## Releases
+
+### Release a site as a .zip
+
+Each release attaches the whole site folder as a `.zip`, ready to unzip and upload to any host (or run with `docker compose up -d` inside it). The GitHub Action `.github/workflows/release-zip.yml` does the work; it's included in every repo made from this template.
+
+Tags name the site and its version: `<site>-v<version>`, e.g. `sales-v1.0.0`. If one repo holds several sites on different branches, the name keeps each site's releases apart.
+
+**Terminal** (from the site's folder, on its branch):
+
+```sh
+git pull                                   # make sure you're releasing the latest
+git tag sales-v1.0.0
+git push origin sales-v1.0.0
+```
+
+**Website (GitHub):**
+
+1. In the repo, open **Releases** (right-hand sidebar) → **Draft a new release**.
+2. **Choose a tag** → type `sales-v1.0.0` → **Create new tag on publish**.
+3. **Target**: pick the site's branch (e.g. `main`, or `sales` if each site has its own branch).
+4. Click **Publish release**.
+
+Within a minute, `homebookmarks-sales-v1.0.0.zip` shows up under the release's **Assets** (refresh the page). The zip leaves out only `.git` and `.github`.
+
+**Using a release:** open **Releases**, download the `.zip` under **Assets**, unzip it, and upload the `homebookmarks-<site>` folder to your host (see [Deploy](#deploy)): drag it onto Netlify Drop or Cloudflare's **Upload assets**, or run `docker compose up -d` inside it.
+
+### Release the Docker image (template maintainers)
+
+On this template repo, plain version tags build the image instead: `git tag v1.2.3 && git push origin v1.2.3` publishes `ghcr.io/adrielleu/homebookmarks:1.2.3` (plus `1.2`, `1`, `latest`) via `.github/workflows/release.yml`, and creates a release.
 
 ## License
 

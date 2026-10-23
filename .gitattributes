@@ -1,0 +1,3 @@
+# Left out of release .zip files (git archive)
+.github export-ignore
+.gitattributes export-ignore
