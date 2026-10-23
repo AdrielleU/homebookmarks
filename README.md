@@ -255,6 +255,48 @@ gh api -X POST repos/{owner}/sales-bookmarks/pages -f "source[branch]=main" -f "
 
 Address: `https://<user-or-org>.github.io/<repo>/`. Pages on a private repo needs a paid GitHub plan, and the published site is public either way. GitHub Pages ignores `_headers`; the main protections are in `index.html`, so they still apply.
 
+### Docker / Podman (self-host)
+
+For running it on your own server, e.g. next to a Homepage container. It serves the files with nginx (a ~50 MB image) and sends the same security headers as `_headers`.
+
+**Terminal:**
+
+```sh
+docker compose up -d          # or: podman compose up -d
+```
+
+Open <http://localhost:8080>. The compose file serves the project folder directly, so editing `bookmarks.yaml`, `settings.yaml` or `icons/` only needs a browser refresh, not a rebuild. Change the port in `docker-compose.yml` (`"8080:80"`). Stop it with `docker compose down`.
+
+Without compose, build an image with everything baked in:
+
+```sh
+docker build -t homebookmarks .
+docker run -d --name homebookmarks -p 8080:80 --restart unless-stopped homebookmarks
+```
+
+**Published image:** each [release](https://github.com/AdrielleU/homebookmarks/releases) publishes `ghcr.io/adrielleu/homebookmarks` with tags `1.2.3`, `1.2`, `1` and `latest`. Run it with your own files mounted on top (pin a major version so updates don't surprise you):
+
+```yaml
+services:
+  bookmarks:
+    image: ghcr.io/adrielleu/homebookmarks:1
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - ./bookmarks.yaml:/usr/share/nginx/html/bookmarks.yaml:ro,z
+      - ./settings.yaml:/usr/share/nginx/html/settings.yaml:ro,z
+      - ./icons:/usr/share/nginx/html/icons:ro,z   # only if you have your own icons; keep icons/default/ in it
+```
+
+Single-file mounts can miss edits from editors that save by replacing the file; run `docker compose restart` if a change doesn't show.
+
+**Making a release** (maintainers): `git tag v1.2.3 && git push origin v1.2.3`. GitHub Actions builds the image for amd64 and arm64, pushes it, and creates the release.
+
+**Web UI:** in Portainer (or similar), **Stacks** → **Add stack** → **Repository**, point it at your site's git repo with compose path `docker-compose.yml` → **Deploy the stack**.
+
+You don't need Docker for Cloudflare Pages, Firebase, Netlify or GitHub Pages; upload the folder as above.
+
 ### Any other web server
 
 Copy the folder into the web root (nginx, Apache, S3 + CloudFront, an intranet server, …).

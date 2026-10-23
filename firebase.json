@@ -1,19 +1,42 @@
 {
   "hosting": {
     "public": ".",
-    "ignore": ["firebase.json", ".firebaserc", "_headers", "README.md", "**/.*"],
+    "ignore": [
+      "firebase.json",
+      ".firebaserc",
+      "_headers",
+      "README.md",
+      "Dockerfile",
+      "docker-compose.yml",
+      "nginx.conf",
+      "**/.*"
+    ],
     "headers": [
       {
         "source": "**",
         "headers": [
-          { "key": "Content-Security-Policy", "value": "frame-ancestors 'none'" },
-          { "key": "Referrer-Policy", "value": "no-referrer" },
-          { "key": "X-Content-Type-Options", "value": "nosniff" }
+          {
+            "key": "Content-Security-Policy",
+            "value": "frame-ancestors 'none'"
+          },
+          {
+            "key": "Referrer-Policy",
+            "value": "no-referrer"
+          },
+          {
+            "key": "X-Content-Type-Options",
+            "value": "nosniff"
+          }
         ]
       },
       {
         "source": "bookmarks.yaml",
-        "headers": [{ "key": "Cache-Control", "value": "no-cache" }]
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache"
+          }
+        ]
       }
     ]
   }

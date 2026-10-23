@@ -1,0 +1,13 @@
+.git
+.gitignore
+.dockerignore
+.firebase
+.netlify
+.wrangler
+.nojekyll
+_headers
+firebase.json
+Dockerfile
+docker-compose.yml
+README.md
+.github
