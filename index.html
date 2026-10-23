@@ -101,12 +101,22 @@
   }
   .bg-grid button[aria-pressed="true"] { border-color: var(--accent); }
   .custom-color, .seed-row { display: flex; gap: .375rem; align-items: center; }
-  #color-which {
-    width: 100%; padding: .4rem .5rem;
-    border: 1px solid var(--card-hover); border-radius: 8px;
-    background: var(--card); color: var(--text); font: inherit; font-size: .85rem; cursor: pointer;
+  #colors summary {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: .375rem; padding: .45rem .6rem;
+    border-radius: 8px; background: var(--card);
+    font-size: .75rem; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--muted);
+    cursor: pointer; list-style: none;
   }
-  #color-which:focus { border-color: var(--accent); outline: none; }
+  #colors summary::-webkit-details-marker { display: none; }
+  #colors summary::after { content: "▾"; font-size: .9rem; transition: transform .15s; }
+  #colors[open] summary::after { transform: rotate(180deg); }
+  #colors summary:hover { color: var(--text); }
+  #colors .seed-note { margin: .5rem 0 .25rem; }
+  #color-list { display: grid; gap: .625rem; }
+  .color-label { display: flex; align-items: baseline; gap: .5rem; margin-bottom: .25rem; }
+  .color-name { font-size: .85rem; font-weight: 600; }
+  .color-hint { font-size: .75rem; color: var(--muted); }
   .custom-color input[type="color"] { width: 3rem; height: 2rem; padding: 0; border: 0; border-radius: 6px; background: none; cursor: pointer; }
   .custom-color input[type="text"], .seed-row input {
     flex: 1; min-width: 0; padding: .3rem .5rem;
@@ -115,13 +125,12 @@
   }
   .custom-color input[type="text"]:focus, .seed-row input:focus { border-color: var(--accent); outline: none; }
   .custom-color input[aria-invalid="true"], .seed-row input[aria-invalid="true"] { border-color: #ef4444; }
-  .seed-row button, #color-default {
+  .seed-row button {
     padding: .3rem .6rem;
     border: 1px solid var(--card-hover); border-radius: 6px;
     background: var(--card); color: var(--text); font: inherit; font-size: .8rem; cursor: pointer; white-space: nowrap;
   }
-  .seed-row button:hover, #color-default:hover:not(:disabled) { background: var(--card-hover); }
-  #color-default:disabled { opacity: .45; cursor: default; }
+  .seed-row button:hover { background: var(--card-hover); }
   .seed-note { margin: 0; font-size: .75rem; color: var(--muted); }
   .seed-note:empty { display: none; }
   #prefs-reset {
@@ -265,14 +274,11 @@
           <div id="prefs-theme" class="seg"></div>
           <h3>Background</h3>
           <div id="prefs-bg" class="bg-grid"></div>
-          <h3>Colors</h3>
-          <select id="color-which" aria-label="Which color to change"></select>
-          <div class="custom-color">
-            <input id="color-picker" type="color" title="Pick any color" aria-label="Pick any color">
-            <input id="color-hex" type="text" spellcheck="false" autocomplete="off" aria-label="Type a hex color">
-            <button id="color-default" type="button" title="Go back to the default color">Default</button>
-          </div>
-          <p id="color-mode" class="seed-note"></p>
+          <details id="colors">
+            <summary>Colors</summary>
+            <p id="color-mode" class="seed-note"></p>
+            <div id="color-list"></div>
+          </details>
           <h3>Seed</h3>
           <div class="seed-row">
             <input id="seed" type="text" inputmode="numeric" autocomplete="off" spellcheck="false" aria-label="Seed: copy yours, or paste one and press Load">
@@ -280,7 +286,7 @@
             <button id="seed-load" type="button">Load</button>
           </div>
           <p id="seed-note" class="seed-note"></p>
-          <button id="prefs-reset" type="button">Reset to site defaults</button>
+          <button id="prefs-reset" type="button">Reset settings</button>
         </div>
       </div>
     </div>
@@ -539,68 +545,80 @@ function choice(button, name, value) {
   return button;
 }
 
-// ---- Colors: pick one in the dropdown, then set it with the picker or a hex code ----
-const COLOR_LABELS = {
-  accent: "Primary: headings and highlights",
-  color: "Secondary: page tint",
-  text: "Primary text: title, date and links",
-  muted: "Secondary text: descriptions",
-  card: "Card: tiles, lists and search box",
-};
-let editing = "accent";
-const colorWhich = $("color-which");
-const colorPicker = $("color-picker");
-const colorHex = $("color-hex");
-
-for (const [name, label] of Object.entries(COLOR_LABELS)) {
-  const option = el("option", null, label);
-  option.value = name;
-  colorWhich.append(option);
-}
+// ---- Colors: one row per color, each with a picker and a hex field (empty = default) ----
+const COLOR_ROWS = [
+  ["text", "Primary", "Title, date, links and buttons"],
+  ["muted", "Secondary", "Descriptions and page path"],
+  ["accent", "Accent", "Section headings and highlights"],
+  ["color", "Background", "Page tint"],
+  ["card", "Card", "Tiles, lists and the search box"],
+];
 
 const modeEditing = () => (isDark() ? "dark" : "light");
 
-// Show the color being edited: the visitor's own, or the default in grey as a placeholder.
-function showColor() {
-  const mode = modeEditing();
-  const own = customColor(editing, mode);
-  colorWhich.value = editing;
-  colorPicker.value = own ? hexOf(own) : CURRENT[editing];
-  colorHex.value = own ? hexOf(own) : "";
-  colorHex.placeholder = `${CURRENT[editing]} (default)`;
-  colorHex.removeAttribute("aria-invalid");
-  $("color-default").disabled = !own;
-  $("color-mode").textContent = `These colors are for ${mode} mode. Switch to ${mode === "dark" ? "light" : "dark"} mode to set its own colors.`;
+function colorRow([name, label, hint]) {
+  const row = el("div", "color-row");
+  row.dataset.color = name;
+  const text = el("div", "color-label");
+  text.append(el("span", "color-name", label), el("span", "color-hint", hint));
+  const own = customColor(name, modeEditing());
+  const picker = el("input");
+  picker.type = "color";
+  picker.value = own ? hexOf(own) : CURRENT[name];
+  picker.title = picker.ariaLabel = `Pick the ${label} color`;
+  const typed = el("input");
+  typed.type = "text";
+  typed.value = own ? hexOf(own) : "";
+  typed.placeholder = CURRENT[name];
+  typed.spellcheck = false;
+  typed.autocomplete = "off";
+  typed.ariaLabel = `${label} color as a hex code`;
+  const use = (value) => {
+    setColor(name, modeEditing(), value);
+    applyTheme();
+    showDefaults();
+    showSeed();
+  };
+  picker.addEventListener("input", () => {
+    typed.value = picker.value;
+    typed.removeAttribute("aria-invalid");
+    use(picker.value);
+  });
+  typed.addEventListener("input", () => {
+    const v = typed.value.trim().replace(/^#?/, "#");
+    typed.setAttribute("aria-invalid", String(!isHex(v) && typed.value.trim() !== ""));
+    if (isHex(v)) {
+      picker.value = v;
+      use(v);
+    } else if (typed.value.trim() === "") {
+      use(null); // cleared: back to the default
+    }
+  });
+
+  const controls = el("div", "custom-color");
+  controls.append(picker, typed);
+  row.append(text, controls);
+  return row;
 }
 
-function setEditing(value) {
-  setColor(editing, modeEditing(), value);
-  applyTheme();
-  $("color-default").disabled = !value;
-  showSeed();
-}
-
-colorWhich.addEventListener("change", () => {
-  editing = colorWhich.value;
-  showColor();
-});
-colorPicker.addEventListener("input", () => {
-  colorHex.value = colorPicker.value;
-  colorHex.removeAttribute("aria-invalid");
-  setEditing(colorPicker.value);
-});
-colorHex.addEventListener("input", () => {
-  const v = colorHex.value.trim().replace(/^#?/, "#");
-  colorHex.setAttribute("aria-invalid", String(!isHex(v) && colorHex.value.trim() !== ""));
-  if (isHex(v)) {
-    colorPicker.value = v;
-    setEditing(v);
+// Defaults depend on other colors (Background shades the text and cards), so refresh
+// every row's grey hint, and the picker of any color still on its default.
+function showDefaults() {
+  for (const row of $("color-list").children) {
+    const name = row.dataset.color;
+    const [picker, typed] = row.querySelectorAll("input");
+    typed.placeholder = CURRENT[name];
+    if (!customColor(name, modeEditing())) picker.value = CURRENT[name];
   }
-});
-$("color-default").addEventListener("click", () => {
-  setEditing(null);
-  showColor();
-});
+}
+
+function buildColors() {
+  const list = $("color-list");
+  list.innerHTML = "";
+  for (const row of COLOR_ROWS) list.append(colorRow(row));
+  const mode = modeEditing();
+  $("color-mode").textContent = `For ${mode} mode. Switch to ${mode === "dark" ? "light" : "dark"} mode to set its own colors.`;
+}
 
 // ---- Seed: the visitor's whole look as a number ----
 const seedEl = $("seed");
@@ -665,7 +683,7 @@ function buildPrefs(note) {
     bgs.append(b);
   }
 
-  showColor();
+  buildColors();
   showSeed(note);
 }
 
