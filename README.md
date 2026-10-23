@@ -181,6 +181,10 @@ To add an icon, save the file into `icons/` and use its file name. Sources (the 
 
 `settings.yaml` sets the title, the search engine, the page `size` (`small`, `medium`, `large`), the starting light/dark mode, colors (`slate`, `blue`, `emerald`, …) and an optional background image: pick one of the photos in `backgrounds/` (`background.image: backgrounds/forest.jpg`) or add your own file and point to it. To use a different image in light and dark mode, give one for each: `image: { light: backgrounds/beach.jpg, dark: backgrounds/night-sky.jpg }`. Text stays readable in both modes: dark mode dims the image and light mode fades it toward white, by the amount set in `background.brightness`. Anything you leave out uses the default from `lib/site.js`. A typo shows the error and line number on the page, same as `bookmarks.yaml`.
 
+### Site icon
+
+`icon.svg` is the browser-tab icon (a diagonal bookmark on a dark tile) and `apple-touch-icon.png` (180×180) is used when someone adds the page to a phone's home screen. To brand a site, replace both files with your own, keeping the names.
+
 ### Views and buttons
 
 Two buttons in the top-right corner let each visitor change how the page looks. Their choices are remembered in their own browser only; `settings.yaml` sets what everyone starts with.

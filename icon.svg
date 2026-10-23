@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <title>Homebookmarks</title>
+  <defs>
+    <linearGradient id="ribbon" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#38bdf8"/>
+      <stop offset="1" stop-color="#6366f1"/>
+    </linearGradient>
+    <clipPath id="tile"><rect width="64" height="64" rx="14"/></clipPath>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="#0f172a"/>
+  <!-- A bookmark ribbon tipped on the diagonal, with a second one behind it -->
+  <g clip-path="url(#tile)">
+    <g transform="translate(1 1) rotate(35 32 32)">
+      <path d="M27 11h16a3 3 0 0 1 3 3v35l-11-7.5L24 49V14a3 3 0 0 1 3-3z" fill="#334155" transform="translate(5 -2)"/>
+      <path d="M22 12h18a3 3 0 0 1 3 3v37l-12-9-12 9V15a3 3 0 0 1 3-3z" fill="url(#ribbon)"/>
+      <path d="M24 17.5h14" stroke="#f0f9ff" stroke-width="2.5" stroke-linecap="round" opacity=".85"/>
+    </g>
+  </g>
+</svg>
