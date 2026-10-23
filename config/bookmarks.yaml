@@ -16,7 +16,7 @@
 #       links:
 #         - name: GitHub
 #           url: https://github.com
-#           icon: github.svg    # optional: file in config/icons/ or lib/icons/
+#           icon: github.svg    # optional: an icon name (see README) or a file in config/images/icons/
 #           abbr: GH            # optional: text shown when there's no icon
 #           desc: Code          # optional: shown under the name
 #

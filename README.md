@@ -12,10 +12,11 @@ Everything you change is in **`config/`**. Leave the rest alone.
 config/
   bookmarks.yaml     your pages and links
   settings.yaml      title, light/dark mode, colors, background
-  icons/             your own icons (optional)
-  (your background image, if you use one)
+  images/            only for custom images (optional)
+    icons/           your own icons, for apps the defaults don't cover
+    my-photo.jpg     your own background, if none of the 14 photos fit
 
-lib/                 the app's code, default icons and background photos
+lib/                 the app's code, ~140 default icons and 14 background photos
 index.html           the page itself
 icon.svg             the browser-tab icon (replace it to brand your site)
 everything else      hosting files (Docker, Firebase, Cloudflare, …)
@@ -55,7 +56,7 @@ sales:                       # a page at #/sales, linked from home
 - Indent with spaces, not tabs. Put a value in quotes if it contains `: ` or ` #`.
 - A typo shows the error and its line number on the page.
 
-**Icons.** Write an icon's name: `github.svg`, `mdi-bank` ([Material Design](https://pictogrammers.com/library/mdi/)), `si-canva` ([Simple Icons](https://simpleicons.org)), or an emoji. About 140 common ones are in `lib/icons/`. For anything else, save the file into `config/icons/` and use its file name. Good sources: [dashboard-icons](https://github.com/homarr-labs/dashboard-icons), [selfh.st](https://selfh.st/icons/), or the app's own website. No icon? The link shows its `abbr` or first letter.
+**Icons.** Write an icon's name: `github.svg`, `mdi-bank` ([Material Design](https://pictogrammers.com/library/mdi/)), `si-canva` ([Simple Icons](https://simpleicons.org)), or an emoji. About 140 common ones are in `lib/icons/`. For anything else, save the file into `config/images/icons/` and use its file name. Good sources: [dashboard-icons](https://github.com/homarr-labs/dashboard-icons), [selfh.st](https://selfh.st/icons/), or the app's own website. No icon? The link shows its `abbr` or first letter.
 
 ## Settings
 
@@ -68,7 +69,7 @@ sales:                       # a page at #/sales, linked from home
 | `view` | `all`: every link on the home screen, up to 4 columns per row. `pages`: one page at a time |
 | `size` | `small`, `medium`, `large` |
 | `color`, `accent` | `slate`, `blue`, `emerald`, … or a hex like `"#4f46e5"` |
-| `background.image` | A bundled photo (`forest`, `beach`, `night-sky`, …), your own file in `config/`, or `""` for none. Use `{ light: beach, dark: night-sky }` for one per mode |
+| `background.image` | One of the 14 photos by name: `alps-clouds`, `beach`, `desert-stars`, `earth-night`, `forest`, `gradient-ocean`, `gradient-rainbow`, `highlands`, `misty-hills`, `mountain-valley`, `night-sky`, `red-mountains`, `starry-peaks`, `yosemite`. Or your own file in `config/images/`, or `""` for none. Use `{ light: beach, dark: night-sky }` for one per mode |
 
 **What visitors can change.** The gear button (top right) lets each visitor pick their own mode, background and colors, saved in their own browser. It also gives them a **seed**: a number that holds their whole look, which they can share. Anyone who pastes it into the gear menu, or opens the page with `?seed=<number>`, gets the same look. `customize: false` hides the gear, and `viewToggle: false` hides the view button.
 

@@ -21,8 +21,8 @@ background:
   # One of the photos that come with the template: alps-clouds, beach, desert-stars,
   # earth-night, forest, gradient-ocean, gradient-rainbow, highlands, misty-hills,
   # mountain-valley, night-sky, red-mountains, starry-peaks, yosemite.
-  # Or your own image: put it in this config/ folder and write its file name, like
-  # background.jpg. "" = plain color. For a different image in each mode, give two:
+  # Or your own image: put it in config/images/ and write its file name, like
+  # my-photo.jpg. "" = plain color. For a different image in each mode, give two:
   #   image:
   #     light: beach
   #     dark: night-sky

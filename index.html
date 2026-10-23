@@ -348,7 +348,7 @@ function letterIcon(name, abbr) {
 
 // icon can be:
 //   an emoji                  "📊"
-//   an icon file              "github" or "github.svg"  (config/icons/ first, then lib/icons/)
+//   an icon file              "github" or "github.svg"  (config/images/icons/ first, then lib/icons/)
 //   a Material Design icon    "mdi-bank"                 (tinted to match the theme)
 //   a Simple Icons icon       "si-canva"                 (tinted to match the theme)
 // Without one, look for a file named after the link ("AWS Console" -> aws-console.svg/.png),
@@ -358,7 +358,7 @@ function iconEl(icon, name = "", abbr) {
   const file = icon ?? iconSlug(name);
   if (!file) return letterIcon(name, abbr);
   const files = /\.\w+$/.test(file) ? [file] : [`${file}.svg`, `${file}.png`];
-  const candidates = [...files.map((f) => `config/icons/${f}`), ...files.map((f) => `lib/icons/${f}`)];
+  const candidates = [...files.map((f) => `config/images/icons/${f}`), ...files.map((f) => `lib/icons/${f}`)];
   const img = el("img", /^(mdi|si)-/.test(file) ? "icon mono" : "icon");
   img.alt = "";
   img.onerror = () => {
