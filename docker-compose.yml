@@ -8,8 +8,8 @@ services:
     ports:
       - "8080:80"
     volumes:
-      # Serve this folder directly, so edits to bookmarks.yaml, settings.yaml and
-      # icons/ show up on refresh without rebuilding. Remove this line to serve
+      # Serve this folder directly, so edits in config/ show up on refresh
+      # without rebuilding. Remove this line to serve
       # the copy baked into the image instead.
       # :z lets SELinux hosts (Fedora/RHEL/Alma) read the folder; ignored elsewhere.
       - ./:/usr/share/nginx/html:ro,z

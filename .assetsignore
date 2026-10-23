@@ -1,0 +1,6 @@
+# Files Cloudflare (wrangler deploy --assets .) should not publish
+.git
+.github
+.wrangler
+.firebase
+.netlify

@@ -6,7 +6,7 @@
 #
 # page-key:
 #   title: Page name
-#   icon: mdi-domain            # optional: an emoji or a file in icons/ (see README)
+#   icon: mdi-domain            # optional: an emoji or an icon name (see README)
 #   description: Subtitle       # optional
 #   parent: home                # optional: the page this one appears under
 #   sections:
@@ -16,7 +16,7 @@
 #       links:
 #         - name: GitHub
 #           url: https://github.com
-#           icon: github.svg    # optional: file in icons/ or icons/default/
+#           icon: github.svg    # optional: file in config/icons/ or lib/icons/
 #           abbr: GH            # optional: text shown when there's no icon
 #           desc: Code          # optional: shown under the name
 #

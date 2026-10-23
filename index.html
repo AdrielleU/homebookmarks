@@ -348,7 +348,7 @@ function letterIcon(name, abbr) {
 
 // icon can be:
 //   an emoji                  "📊"
-//   an icon file              "github" or "github.svg"  (icons/ first, then icons/default/)
+//   an icon file              "github" or "github.svg"  (config/icons/ first, then lib/icons/)
 //   a Material Design icon    "mdi-bank"                 (tinted to match the theme)
 //   a Simple Icons icon       "si-canva"                 (tinted to match the theme)
 // Without one, look for a file named after the link ("AWS Console" -> aws-console.svg/.png),
@@ -358,7 +358,7 @@ function iconEl(icon, name = "", abbr) {
   const file = icon ?? iconSlug(name);
   if (!file) return letterIcon(name, abbr);
   const files = /\.\w+$/.test(file) ? [file] : [`${file}.svg`, `${file}.png`];
-  const candidates = [...files.map((f) => `icons/${f}`), ...files.map((f) => `icons/default/${f}`)];
+  const candidates = [...files.map((f) => `config/icons/${f}`), ...files.map((f) => `lib/icons/${f}`)];
   const img = el("img", /^(mdi|si)-/.test(file) ? "icon mono" : "icon");
   img.alt = "";
   img.onerror = () => {
@@ -677,9 +677,9 @@ function buildPrefs(note) {
   bgs.innerHTML = "";
   const own = siteBackground(mode);
   const options = [];
-  if (own && !BACKGROUNDS.some((n) => own === `backgrounds/${n}.jpg`)) options.push({ value: own, thumb: own, label: "Site default" });
+  if (own && !photoName(own)) options.push({ value: own, thumb: imageUrl(own), label: "Site default" });
   options.push({ value: "", label: "None" });
-  for (const n of BACKGROUNDS) options.push({ value: `backgrounds/${n}.jpg`, thumb: `backgrounds/thumbs/${n}.jpg`, label: n.replace(/-/g, " ") });
+  for (const n of BACKGROUNDS) options.push({ value: `backgrounds/${n}.jpg`, thumb: `lib/backgrounds/thumbs/${n}.jpg`, label: n.replace(/-/g, " ") });
   for (const o of options) {
     const b = el("button");
     b.type = "button";
@@ -854,7 +854,7 @@ async function loadYaml(file) {
 }
 
 async function loadSite() {
-  const [settings, bookmarks] = await Promise.all([loadYaml("settings.yaml"), loadYaml("bookmarks.yaml")]);
+  const [settings, bookmarks] = await Promise.all([loadYaml("config/settings.yaml"), loadYaml("config/bookmarks.yaml")]);
   applySettings(settings);
   for (const [slug, def] of Object.entries(bookmarks)) pages.set(slug, { ...def, slug });
 }

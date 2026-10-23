@@ -25,12 +25,12 @@ SOFTWARE.
 Third-party files included in this repository keep their own licenses:
 
 - lib/js-yaml.min.js: js-yaml, MIT License, (c) Vitaly Puzrin. https://github.com/nodeca/js-yaml
-- icons/default/mdi-*.svg: Material Design Icons, Pictogrammers Free License. https://pictogrammers.com
-- icons/default/si-*.svg: Simple Icons, CC0 1.0. https://simpleicons.org
-- Other icons in icons/default/: mostly from dashboard-icons, Apache License 2.0.
+- lib/icons/mdi-*.svg: Material Design Icons, Pictogrammers Free License. https://pictogrammers.com
+- lib/icons/si-*.svg: Simple Icons, CC0 1.0. https://simpleicons.org
+- Other icons in lib/icons/: mostly from dashboard-icons, Apache License 2.0.
   https://github.com/homarr-labs/dashboard-icons
-- backgrounds/*.jpg and backgrounds/thumbs/*.jpg: photos from Unsplash, Unsplash License. https://unsplash.com/license
-  Each file's source is listed in backgrounds/SOURCES.md.
+- lib/backgrounds/*.jpg and lib/backgrounds/thumbs/*.jpg: photos from Unsplash, Unsplash License. https://unsplash.com/license
+  Each file's source is listed in lib/backgrounds/SOURCES.md.
 
 Product names and logos are trademarks of their respective owners and are used
 only to identify links to those products.

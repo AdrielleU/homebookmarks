@@ -30,7 +30,7 @@
         ]
       },
       {
-        "source": "bookmarks.yaml",
+        "source": "config/**",
         "headers": [
           {
             "key": "Cache-Control",
