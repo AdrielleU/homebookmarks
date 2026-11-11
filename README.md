@@ -71,7 +71,7 @@ sales:                       # a page at #/sales, linked from home
 | `color`, `accent` | `slate`, `blue`, `emerald`, … or a hex like `"#4f46e5"` |
 | `background.image` | One of the 14 photos by name: `alps-clouds`, `beach`, `desert-stars`, `earth-night`, `forest`, `gradient-ocean`, `gradient-rainbow`, `highlands`, `misty-hills`, `mountain-valley`, `night-sky`, `red-mountains`, `starry-peaks`, `yosemite`. Or your own file in `config/images/`, or `""` for none. Use `{ light: beach, dark: night-sky }` for one per mode |
 
-**What visitors can change.** The gear button (top right) lets each visitor pick their own mode, background and colors, saved in their own browser. It also gives them a **seed**: a number that holds their whole look, which they can share. Anyone who pastes it into the gear menu, or opens the page with `?seed=<number>`, gets the same look. `customize: false` hides the gear, and `viewToggle: false` hides the view button.
+**What visitors can change.** The gear button (top right) lets each visitor pick their own mode, background, colors and how links open (same page, new tab or new window; `openLinks` in settings.yaml sets the default), saved in their own browser. It also gives them a **seed**: a number that holds their whole look, which they can share. Anyone who pastes it into the gear menu, or opens the page with `?seed=<number>`, gets the same look. `customize: false` hides the gear, and `viewToggle: false` hides the view button.
 
 ## Preview on your computer
 

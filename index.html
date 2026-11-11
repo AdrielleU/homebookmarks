@@ -133,6 +133,12 @@
     background: var(--card); color: var(--text); font: inherit; font-size: .8rem; cursor: pointer; white-space: nowrap;
   }
   .seed-row button:hover { background: var(--card-hover); }
+  #prefs-open {
+    width: 100%; padding: .4rem .5rem;
+    border: 1px solid var(--card-hover); border-radius: 8px;
+    background: var(--card); color: var(--text); font: inherit; font-size: .85rem; cursor: pointer;
+  }
+  #prefs-open:focus { border-color: var(--accent); outline: none; }
   .seed-note { margin: 0; font-size: .75rem; color: var(--muted); }
   .seed-note:empty { display: none; }
   #prefs-reset {
@@ -284,6 +290,8 @@
             <summary>Colors</summary>
             <div id="color-list"></div>
           </details>
+          <h3>Open links</h3>
+          <select id="prefs-open" aria-label="Open links"></select>
           <h3>Seed</h3>
           <div class="seed-row">
             <input id="seed" type="text" inputmode="numeric" autocomplete="off" spellcheck="false" aria-label="Seed: copy yours, or paste one and press Load">
@@ -553,6 +561,34 @@ $("view-toggle").addEventListener("click", () => {
   window.scrollTo(0, 0);
 });
 
+// ---- Opening links: in this tab, a new tab, or a new window ----
+// The visitor picks in the gear menu; settings.yaml `openLinks` is the default.
+const OPEN_LINKS = [["same", "Open in same page"], ["tab", "Open in new tab"], ["window", "Open in new window"]];
+
+// A link with `newTab: true` never opens in this tab.
+function openMode(newTab = false) {
+  const mode = pref("openLinks");
+  const valid = OPEN_LINKS.some(([v]) => v === mode) ? mode : "same";
+  return newTab && valid === "same" ? "tab" : valid;
+}
+
+function openLink(href, mode) {
+  if (mode === "same") location.href = href;
+  else if (mode === "window") window.open(href, "_blank", "noopener,popup"); // browsers only give pages a new window as a popup
+  else window.open(href, "_blank", "noopener");
+}
+
+// Plain left clicks on bookmarks follow the setting; Ctrl/Cmd/Shift/middle click keep the browser's own behavior.
+document.addEventListener("click", (e) => {
+  const a = e.target.closest?.("#content a, #launcher-results a");
+  if (!a || a.classList.contains("page") || a.getAttribute("href") === "#") return;
+  if (e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+  const mode = openMode(a.target === "_blank");
+  if (mode === "same") return;
+  e.preventDefault();
+  openLink(a.href, mode);
+});
+
 // ---- Gear menu ----
 const prefsEl = $("prefs");
 const prefsToggle = $("prefs-toggle");
@@ -715,9 +751,15 @@ function buildPrefs(note) {
     bgs.append(b);
   }
 
+  const open = $("prefs-open");
+  open.innerHTML = "";
+  for (const [value, label] of OPEN_LINKS) open.append(new Option(label, value, false, value === openMode()));
+
   buildColors();
   showSeed(note);
 }
+
+$("prefs-open").addEventListener("change", (e) => savePref("openLinks", e.target.value));
 
 function setPrefsOpen(open) {
   prefsEl.hidden = !open;
@@ -728,6 +770,7 @@ function setPrefsOpen(open) {
 prefsToggle.addEventListener("click", () => setPrefsOpen(prefsEl.hidden));
 $("prefs-reset").addEventListener("click", () => {
   resetPrefs();
+  savePref("openLinks", null);
   applyTheme();
   buildPrefs();
 });
@@ -817,10 +860,8 @@ launcherInput.addEventListener("keydown", (e) => {
     if (item.isPage) {
       closeLauncher();
       location.hash = href;
-    } else if (e.ctrlKey || e.metaKey || item.newTab) {
-      window.open(href, "_blank", "noopener");
     } else {
-      location.href = href;
+      openLink(href, e.ctrlKey || e.metaKey ? "tab" : openMode(item.newTab));
     }
   } else if (e.key === "Escape") {
     closeLauncher();

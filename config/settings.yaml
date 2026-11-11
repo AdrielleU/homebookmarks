@@ -13,6 +13,8 @@ viewToggle: true   # show the pages/all button
 theme: light       # starting mode: light, dark, or auto (follow the visitor's device)
 customize: true    # show the gear menu, where each visitor can pick their own mode, background
                    # and colors (remembered in their browser). These settings are the starting look.
+openLinks: same    # how bookmarks open: same (this tab), tab (a new tab), or window (a new window).
+                   # Visitors can change it in the gear menu.
 color: slate       # secondary color, tints the page and cards: slate, gray, zinc, neutral, stone, red,
                    # orange, amber, emerald, teal, sky, blue, indigo, violet, purple, rose, or a hex like "#4f46e5"
 accent: sky        # primary color, for highlights: any color name above, or a hex in quotes like "#38bdf8"
